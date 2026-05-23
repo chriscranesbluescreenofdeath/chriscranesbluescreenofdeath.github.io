@@ -4,10 +4,6 @@
 
 ---
 
-> **AGENTIC PROMPT** — Paste the block below at the start of any new Claude session to restore full context instantly.
-
----
-
 ## ⚡ Quick-Start Prompt (copy & paste at the start of each chat)
 
 ```
@@ -31,7 +27,7 @@ LOCKER ROOM TAB (in index.html):
 - Contains a JavaScript array called 'sessions' (search for "const sessions")
 - Each session object = { date, title, subtitle, tags[], file }
 - Tags: "game" (green), "coaching" (blue), "film" (gold)
-- Adding a session = add an object to the array AND create the HTML file in coaching/games/
+- Adding a session = add object to array AND create the HTML file in coaching/games/
 
 DESIGN SYSTEM:
 - Colors: navy #0a1628, gold #c9a84c, dark-gray #2d3a4e, mid-gray #8a9ab5
@@ -50,7 +46,7 @@ TODAY'S TASK: [describe what you want to add or change]
 ├── index.html                        ← Main profile page (tabbed)
 ├── README.md                         ← This file / agentic prompt
 └── coaching/
-    ├── template.html                 ← Master template — copy this for new game pages
+    ├── template.html                 ← Master template for new game pages
     └── games/
         ├── README.md                 ← Folder guide
         └── YYYY-MM-DD-opponent.html  ← Individual game review pages go here
