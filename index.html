@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oliver Crane | Road to D1</title>
+  <style>
+    :root {
+      --navy: #0a1628;
+      --gold: #c9a84c;
+      --gold-light: #e8c96a;
+      --white: #ffffff;
+      --light-gray: #f4f6f9;
+      --mid-gray: #8a9ab5;
+      --dark-gray: #2d3a4e;
+      --accent: #1565c0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      min-height: 100vh;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #0a1628 0%, #1a2e50 60%, #0d2040 100%);
+      padding: 60px 20px 40px;
+      text-align: center;
+      border-bottom: 3px solid var(--gold);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero-number {
+      font-size: 10rem;
+      font-weight: 900;
+      color: rgba(201,168,76,0.07);
+      position: absolute;
+      top: -10px; right: 20px;
+      line-height: 1;
+      user-select: none;
+    }
+    .player-name {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--white);
+      line-height: 1.1;
+    }
+    .player-name span { color: var(--gold); }
+    .tagline {
+      margin-top: 14px;
+      font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+      font-weight: 600;
+      color: var(--gold-light);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .hero-divider {
+      width: 60px; height: 3px;
+      background: var(--gold);
+      margin: 18px auto;
+      border-radius: 2px;
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: clamp(20px, 4vw, 60px);
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat .val {
+      display: block;
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--gold);
+    }
+    .hero-stat .lbl {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--mid-gray);
+    }
+
+    /* ── NAV TABS ── */
+    .tabs-bar {
+      background: var(--dark-gray);
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      padding: 0 16px;
+      border-bottom: 2px solid rgba(201,168,76,0.2);
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--mid-gray);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 16px 20px 14px;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { color: var(--gold-light); }
+    .tab-btn.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    /* ── PANELS ── */
+    .panel { display: none; padding: 40px 20px; max-width: 1000px; margin: 0 auto; }
+    .panel.active { display: block; }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 24px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(201,168,76,0.25);
+    }
+
+    /* ── ABOUT PANEL ── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 600px) { .about-grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--dark-gray);
+      border-radius: 10px;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .card h3 {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    .card p, .card li {
+      font-size: 0.95rem;
+      color: #c8d0de;
+      line-height: 1.7;
+    }
+    .card ul { padding-left: 18px; }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.92rem;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-row .label { color: var(--mid-gray); }
+    .stat-row .value { color: var(--white); font-weight: 700; }
+
+    /* ── STATS PANEL ── */
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .stats-table th {
+      background: rgba(201,168,76,0.15);
+      color: var(--gold);
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      padding: 12px 14px;
+      text-align: left;
+    }
+    .stats-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      color: #c8d0de;
+    }
+    .stats-table tr:hover td { background: rgba(255,255,255,0.03); }
+    .coming-soon {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--mid-gray);
+      font-size: 0.95rem;
+    }
+    .coming-soon .icon { font-size: 3rem; margin-bottom: 12px; }
+
+    /* ── LOCKER ROOM ── */
+    .session-list { display: flex; flex-direction: column; gap: 14px; }
+    .session-card {
+      background: var(--dark-gray);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-left: 4px solid var(--gold);
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .session-card:hover {
+      border-left-color: var(--gold-light);
+      background: #374258;
+      transform: translateX(4px);
+    }
+    .session-meta { flex: 1; }
+    .session-meta .date {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+    .session-meta .title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+    .session-meta .subtitle {
+      font-size: 0.83rem;
+      color: var(--mid-gray);
+      margin-top: 3px;
+    }
+    .session-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(201,168,76,0.15);
+      color: var(--gold-light);
+      border: 1px solid rgba(201,168,76,0.3);
+    }
+    .tag.coaching { background: rgba(21,101,192,0.2); color: #82b4ff; border-color: rgba(21,101,192,0.4); }
+    .tag.game { background: rgba(46,160,67,0.2); color: #7ee787; border-color: rgba(46,160,67,0.4); }
+    .tag.film { background: rgba(201,168,76,0.15); color: var(--gold-light); border-color: rgba(201,168,76,0.3); }
+    .session-arrow { color: var(--gold); font-size: 1.2rem; }
+    .locker-room-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .session-count {
+      font-size: 0.8rem;
+      color: var(--mid-gray);
+      background: rgba(255,255,255,0.05);
+      padding: 6px 14px;
+      border-radius: 20px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--mid-gray);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--mid-gray);
+      font-size: 0.78rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-number">00</div>
+  <div class="player-name"><span>Oliver</span> Crane</div>
+  <div class="hero-divider"></div>
+  <div class="tagline">Versatile Wing &bull; 6&apos;3&quot; / 180 lbs &bull; Class of 2028 &bull; Strong Academic Student</div>
+  <div class="hero-stats">
+    <div class="hero-stat"><span class="val">6&apos;3&quot;</span><span class="lbl">Height</span></div>
+    <div class="hero-stat"><span class="val">180</span><span class="lbl">Weight (lbs)</span></div>
+    <div class="hero-stat"><span class="val">2028</span><span class="lbl">Grad Year</span></div>
+    <div class="hero-stat"><span class="val">SF/SG</span><span class="lbl">Position</span></div>
+    <div class="hero-stat"><span class="val">—</span><span class="lbl">GPA</span></div>
+  </div>
+</header>
+
+<!-- TABS -->
+<nav class="tabs-bar">
+  <button class="tab-btn active" onclick="showTab('about')">Profile</button>
+  <button class="tab-btn" onclick="showTab('stats')">Stats</button>
+  <button class="tab-btn" onclick="showTab('highlights')">Highlights</button>
+  <button class="tab-btn" onclick="showTab('video')">Film Room</button>
+  <button class="tab-btn" onclick="showTab('calendar')">Schedule</button>
+  <button class="tab-btn" onclick="showTab('locker')">Locker Room</button>
+</nav>
+
+<!-- ── ABOUT PANEL ── -->
+<section id="tab-about" class="panel active">
+  <div class="about-grid">
+    <div class="card">
+      <h3>Player Profile</h3>
+      <div class="stat-row"><span class="label">Position</span><span class="value">Small Forward / Shooting Guard</span></div>
+      <div class="stat-row"><span class="label">Height</span><span class="value">6&apos;3&quot;</span></div>
+      <div class="stat-row"><span class="label">Weight</span><span class="value">180 lbs</span></div>
+      <div class="stat-row"><span class="label">Grad Year</span><span class="value">2028</span></div>
+      <div class="stat-row"><span class="label">School</span><span class="value">— Coming Soon —</span></div>
+      <div class="stat-row"><span class="label">Location</span><span class="value">— Coming Soon —</span></div>
+      <div class="stat-row"><span class="label">Wingspan</span><span class="value">— Coming Soon —</span></div>
+      <div class="stat-row"><span class="label">Dominant Hand</span><span class="value">— Coming Soon —</span></div>
+    </div>
+    <div class="card">
+      <h3>Academics</h3>
+      <div class="stat-row"><span class="label">GPA</span><span class="value">— Coming Soon —</span></div>
+      <div class="stat-row"><span class="label">Class Rank</span><span class="value">— Coming Soon —</span></div>
+      <div class="stat-row"><span class="label">SAT / ACT</span><span class="value">— Coming Soon —</span></div>
+      <div class="stat-row"><span class="label">Honors / AP</span><span class="value">— Coming Soon —</span></div>
+    </div>
+    <div class="card">
+      <h3>Strengths</h3>
+      <ul>
+        <li>— Coming Soon —</li>
+        <li>— Coming Soon —</li>
+        <li>— Coming Soon —</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Contact</h3>
+      <div class="stat-row"><span class="label">Parent Email</span><span class="value">— Coming Soon —</span></div>
+      <div class="stat-row"><span class="label">Phone</span><span class="value">— Coming Soon —</span></div>
+      <div class="stat-row"><span class="label">Coach</span><span class="value">— Coming Soon —</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── STATS PANEL ── -->
+<section id="tab-stats" class="panel">
+  <p class="section-title">Season Stats</p>
+  <table class="stats-table">
+    <thead>
+      <tr>
+        <th>Season</th><th>Team</th><th>GP</th><th>PPG</th><th>RPG</th>
+        <th>APG</th><th>SPG</th><th>BPG</th><th>FG%</th><th>3P%</th><th>FT%</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>2025–26</td><td>— TBD —</td>
+        <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+        <td>—</td><td>—</td><td>—</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── HIGHLIGHTS PANEL ── -->
+<section id="tab-highlights" class="panel">
+  <p class="section-title">Highlight Reels</p>
+  <div class="coming-soon">
+    <div class="icon">🎬</div>
+    <p>Highlight videos coming soon.</p>
+  </div>
+</section>
+
+<!-- ── FILM ROOM PANEL ── -->
+<section id="tab-video" class="panel">
+  <p class="section-title">Full Game Film</p>
+  <div class="coming-soon">
+    <div class="icon">📽️</div>
+    <p>Full game footage coming soon.</p>
+  </div>
+</section>
+
+<!-- ── SCHEDULE PANEL ── -->
+<section id="tab-calendar" class="panel">
+  <p class="section-title">Upcoming Events &amp; Games</p>
+  <div class="coming-soon">
+    <div class="icon">📅</div>
+    <p>Schedule and tournament calendar coming soon.</p>
+  </div>
+</section>
+
+<!-- ── LOCKER ROOM PANEL ── -->
+<section id="tab-locker" class="panel">
+  <div class="locker-room-header">
+    <p class="section-title" style="margin-bottom:0;border:none;">Locker Room — Coaching &amp; Film Review</p>
+    <span class="session-count" id="session-count">0 sessions</span>
+  </div>
+  <div class="session-list" id="session-list">
+    <div class="empty-state">
+      <p>No sessions posted yet. Check back soon.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  &copy; 2026 Oliver Crane &mdash; Road to D1 &bull; Built with purpose.
+</footer>
+
+<script>
+  // ── TAB SWITCHING ──
+  function showTab(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+
+  // ── SESSION DATA ──
+  // Add new sessions here as objects in the array.
+  // Each session needs: date, title, subtitle, tags (array), file (path to review HTML)
+  const sessions = [
+    // Example — uncomment and edit to add sessions:
+    // {
+    //   date: "May 18, 2025",
+    //   title: "Spring League Game vs. West Side",
+    //   subtitle: "Post-game film review — offense & defensive rotations",
+    //   tags: ["game", "film"],
+    //   file: "reviews/2025-05-18-west-side.html"
+    // }
+  ];
+
+  // ── RENDER SESSIONS ──
+  const list = document.getElementById('session-list');
+  const counter = document.getElementById('session-count');
+  if (sessions.length > 0) {
+    list.innerHTML = '';
+    counter.textContent = sessions.length + ' session' + (sessions.length !== 1 ? 's' : '');
+    sessions.forEach(s => {
+      const card = document.createElement('a');
+      card.className = 'session-card';
+      card.href = s.file;
+      card.innerHTML = `
+        <div class="session-meta">
+          <div class="date">${s.date}</div>
+          <div class="title">${s.title}</div>
+          <div class="subtitle">${s.subtitle}</div>
+        </div>
+        <div class="session-tags">
+          ${s.tags.map(t => `<span class="tag ${t}">${t}</span>`).join('')}
+        </div>
+        <div class="session-arrow">&#8594;</div>
+      `;
+      list.appendChild(card);
+    });
+  } else {
+    counter.textContent = '0 sessions';
+  }
+</script>
+</body>
+</html>
