@@ -194,6 +194,201 @@
       color: #c8d0de;
     }
     .stats-table tr:hover td { background: rgba(255,255,255,0.03); }
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oliver Crane | Road to D1</title>
+  <style>
+    :root {
+      --navy: #0a1628;
+      --gold: #c9a84c;
+      --gold-light: #e8c96a;
+      --white: #ffffff;
+      --light-gray: #f4f6f9;
+      --mid-gray: #8a9ab5;
+      --dark-gray: #2d3a4e;
+      --accent: #1565c0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      min-height: 100vh;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #0a1628 0%, #1a2e50 60%, #0d2040 100%);
+      padding: 60px 20px 40px;
+      text-align: center;
+      border-bottom: 3px solid var(--gold);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero-number {
+      font-size: 10rem;
+      font-weight: 900;
+      color: rgba(201,168,76,0.07);
+      position: absolute;
+      top: -10px; right: 20px;
+      line-height: 1;
+      user-select: none;
+    }
+    .player-name {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--white);
+      line-height: 1.1;
+    }
+    .player-name span { color: var(--gold); }
+    .tagline {
+      margin-top: 14px;
+      font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+      font-weight: 600;
+      color: var(--gold-light);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .hero-divider {
+      width: 60px; height: 3px;
+      background: var(--gold);
+      margin: 18px auto;
+      border-radius: 2px;
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: clamp(20px, 4vw, 60px);
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat .val {
+      display: block;
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--gold);
+    }
+    .hero-stat .lbl {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--mid-gray);
+    }
+
+    /* ── NAV TABS ── */
+    .tabs-bar {
+      background: var(--dark-gray);
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      padding: 0 16px;
+      border-bottom: 2px solid rgba(201,168,76,0.2);
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--mid-gray);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 16px 20px 14px;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { color: var(--gold-light); }
+    .tab-btn.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    /* ── PANELS ── */
+    .panel { display: none; padding: 40px 20px; max-width: 1000px; margin: 0 auto; }
+    .panel.active { display: block; }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 24px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(201,168,76,0.25);
+    }
+
+    /* ── ABOUT PANEL ── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 600px) { .about-grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--dark-gray);
+      border-radius: 10px;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .card h3 {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    .card p, .card li {
+      font-size: 0.95rem;
+      color: #c8d0de;
+      line-height: 1.7;
+    }
+    .card ul { padding-left: 18px; }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.92rem;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-row .label { color: var(--mid-gray); }
+    .stat-row .value { color: var(--white); font-weight: 700; }
+
+    /* ── STATS PANEL ── */
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .stats-table th {
+      background: rgba(201,168,76,0.15);
+      color: var(--gold);
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      padding: 12px 14px;
+      text-align: left;
+    }
+    .stats-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      color: #c8d0de;
+    }
+    .stats-table tr:hover td { background: rgba(255,255,255,0.03); }
     .coming-soon {
       text-align: center;
       padding: 60px 20px;
@@ -432,14 +627,13 @@
   // Add new sessions here as objects in the array.
   // Each session needs: date, title, subtitle, tags (array), file (path to review HTML)
   const sessions = [
-    // Example — uncomment and edit to add sessions:
-    // {
-    //   date: "May 18, 2025",
-    //   title: "Spring League Game vs. West Side",
-    //   subtitle: "Post-game film review — offense & defensive rotations",
-    //   tags: ["game", "film"],
-    //   file: "reviews/2025-05-18-west-side.html"
-    // }
+    {
+      date: "May 16, 2026",
+      title: "vs. RBA Academy",
+      subtitle: "Game film review — full coaching breakdown",
+      tags: ["game", "film"],
+      file: "coaching/games/2026-05-16_Oliver_vs_RBA_Academy.html"
+    }
   ];
 
   // ── RENDER SESSIONS ──
