@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Review | Oliver Crane</title>
+  <style>
+    :root {
+      --navy: #0a1628;
+      --gold: #c9a84c;
+      --gold-light: #e8c96a;
+      --white: #ffffff;
+      --dark-gray: #2d3a4e;
+      --mid-gray: #8a9ab5;
+      --light-text: #c8d0de;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      min-height: 100vh;
+    }
+
+    /* ── TOP NAV ── */
+    .top-nav {
+      background: var(--dark-gray);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 2px solid rgba(201,168,76,0.2);
+    }
+    .back-link {
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .back-link:hover { color: var(--gold-light); }
+    .nav-sep { color: var(--mid-gray); }
+    .nav-crumb { color: var(--mid-gray); font-size: 0.82rem; }
+
+    /* ── HEADER ── */
+    .review-header {
+      background: linear-gradient(135deg, #0a1628 0%, #1a2e50 100%);
+      padding: 40px 24px 30px;
+      border-bottom: 3px solid var(--gold);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .review-meta-top {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+    .badge.date { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+    .badge.type-game { background: rgba(46,160,67,0.2); color: #7ee787; border: 1px solid rgba(46,160,67,0.4); }
+    .badge.type-coaching { background: rgba(21,101,192,0.2); color: #82b4ff; border: 1px solid rgba(21,101,192,0.4); }
+    .badge.type-film { background: rgba(201,168,76,0.15); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.3); }
+    .review-title {
+      font-size: clamp(1.5rem, 4vw, 2.2rem);
+      font-weight: 900;
+      line-height: 1.2;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    .review-subtitle { font-size: 1rem; color: var(--mid-gray); }
+
+    /* ── CONTENT ── */
+    .content-wrap { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+    .section { margin-bottom: 40px; }
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(201,168,76,0.25);
+    }
+
+    /* ── BOX SCORE ── */
+    .box-score {
+      background: var(--dark-gray);
+      border-radius: 10px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .stat-box { text-align: center; }
+    .stat-box .val {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .stat-box .lbl {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--mid-gray);
+      margin-top: 4px;
+    }
+
+    /* ── VIDEO EMBED ── */
+    .video-wrap {
+      background: var(--dark-gray);
+      border-radius: 10px;
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      border: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-wrap iframe { width: 100%; height: 100%; border: none; }
+    .video-placeholder {
+      text-align: center;
+      color: var(--mid-gray);
+      padding: 40px;
+    }
+    .video-placeholder .icon { font-size: 3rem; margin-bottom: 10px; }
+
+    /* ── COACHING NOTES ── */
+    .notes-card {
+      background: var(--dark-gray);
+      border-radius: 10px;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-left: 4px solid var(--gold);
+    }
+    .notes-card p { color: var(--light-text); line-height: 1.8; font-size: 0.97rem; margin-bottom: 12px; }
+    .notes-card p:last-child { margin-bottom: 0; }
+
+    /* ── BREAKDOWN ITEMS ── */
+    .breakdown-list { display: flex; flex-direction: column; gap: 16px; }
+    .breakdown-item {
+      background: var(--dark-gray);
+      border-radius: 10px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .breakdown-item .timestamp {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+    .breakdown-item .play-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+    .breakdown-item .play-note { font-size: 0.9rem; color: var(--light-text); line-height: 1.6; }
+    .tag-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .micro-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 12px;
+    }
+    .micro-tag.positive { background: rgba(46,160,67,0.2); color: #7ee787; }
+    .micro-tag.improve { background: rgba(210,80,60,0.2); color: #ff9980; }
+    .micro-tag.neutral { background: rgba(138,154,181,0.2); color: var(--mid-gray); }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--mid-gray);
+      font-size: 0.78rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <a class="back-link" href="../../index.html">&#8592; Back to Profile</a>
+  <span class="nav-sep">/</span>
+  <span class="nav-crumb">Coaching</span>
+  <span class="nav-sep">/</span>
+  <span class="nav-crumb">Games</span>
+  <span class="nav-sep">/</span>
+  <span class="nav-crumb" id="nav-title">Session Review</span>
+</nav>
+
+<!-- REVIEW HEADER -->
+<div class="review-header">
+  <div class="review-meta-top">
+    <span class="badge date" id="hdr-date">Date</span>
+    <span class="badge type-game" id="hdr-type">Game</span>
+  </div>
+  <h1 class="review-title" id="hdr-title">Game Review Title</h1>
+  <p class="review-subtitle" id="hdr-subtitle">Opponent &bull; Location &bull; Result</p>
+</div>
+
+<!-- CONTENT -->
+<div class="content-wrap">
+
+  <!-- BOX SCORE -->
+  <div class="section" id="section-boxscore">
+    <p class="section-label">Game Stats</p>
+    <div class="box-score">
+      <div class="stat-box"><div class="val" id="stat-pts">—</div><div class="lbl">Points</div></div>
+      <div class="stat-box"><div class="val" id="stat-reb">—</div><div class="lbl">Rebounds</div></div>
+      <div class="stat-box"><div class="val" id="stat-ast">—</div><div class="lbl">Assists</div></div>
+      <div class="stat-box"><div class="val" id="stat-stl">—</div><div class="lbl">Steals</div></div>
+      <div class="stat-box"><div class="val" id="stat-blk">—</div><div class="lbl">Blocks</div></div>
+      <div class="stat-box"><div class="val" id="stat-fg">—</div><div class="lbl">FG</div></div>
+      <div class="stat-box"><div class="val" id="stat-3p">—</div><div class="lbl">3PT</div></div>
+      <div class="stat-box"><div class="val" id="stat-ft">—</div><div class="lbl">FT</div></div>
+      <div class="stat-box"><div class="val" id="stat-min">—</div><div class="lbl">Minutes</div></div>
+    </div>
+  </div>
+
+  <!-- VIDEO -->
+  <div class="section" id="section-video">
+    <p class="section-label">Game Film</p>
+    <div class="video-wrap" id="video-container">
+      <div class="video-placeholder">
+        <div class="icon">&#128253;</div>
+        <p>Film link coming soon.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- COACHING OVERVIEW -->
+  <div class="section" id="section-overview">
+    <p class="section-label">Coaching Overview</p>
+    <div class="notes-card" id="coaching-notes">
+      <p>Coaching notes will appear here.</p>
+    </div>
+  </div>
+
+  <!-- PLAY-BY-PLAY BREAKDOWN -->
+  <div class="section" id="section-breakdown">
+    <p class="section-label">Film Breakdown — Key Plays</p>
+    <div class="breakdown-list" id="breakdown-list">
+      <div class="breakdown-item">
+        <div class="timestamp">0:00</div>
+        <div class="play-title">Placeholder play</div>
+        <div class="play-note">Coaching notes for this play will go here.</div>
+        <div class="tag-row">
+          <span class="micro-tag positive">Positive</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  &copy; 2026 Oliver Crane &mdash; Road to D1
+</footer>
+
+</body>
+</html>
