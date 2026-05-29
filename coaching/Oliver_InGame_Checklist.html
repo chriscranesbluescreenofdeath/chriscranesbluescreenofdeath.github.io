@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oliver — In-Game Checklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --court:#0c1a2b; --court2:#13263d; --ink:#eef3f8; --muted:#8fa6bd;
+    --line:#22405f; --orange:#ff6b1a; --orange2:#ff8c42; --green:#3fb950;
+    --blue:#4d9fec; --gold:#f5b942; --card:#0f2034; --red:#e5534b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(255,107,26,.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 20%, rgba(77,159,236,.10), transparent 55%),
+      linear-gradient(180deg, var(--court) 0%, #081320 100%);
+    background-attachment:fixed; color:var(--ink);
+    font-family:'Archivo',system-ui,sans-serif; line-height:1.55;
+    min-height:100vh; padding-bottom:80px;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+
+  /* HEADER */
+  header{padding:54px 0 30px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .eyebrow{font-family:'Oswald',sans-serif;letter-spacing:.32em;text-transform:uppercase;font-size:13px;color:var(--orange2);font-weight:600;margin-bottom:14px}
+  h1{font-family:'Oswald',sans-serif;font-weight:700;font-size:clamp(38px,7vw,76px);line-height:.96;text-transform:uppercase;letter-spacing:-.01em}
+  h1 .accent{color:var(--orange)}
+  .sub{margin-top:16px;color:var(--muted);font-size:clamp(14px,2vw,17px);display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+  .sub .dot{width:5px;height:5px;border-radius:50%;background:var(--orange);display:inline-block}
+  .tag-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(245,185,66,.14);border:1px solid rgba(245,185,66,.4);color:var(--gold);font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:12px;padding:5px 12px;border-radius:999px}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:50;background:rgba(8,19,32,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin:18px 0 0}
+  nav .wrap{display:flex;gap:6px;overflow-x:auto;padding:11px 22px}
+  nav a{color:var(--muted);text-decoration:none;white-space:nowrap;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:7px 13px;border-radius:8px;transition:.2s}
+  nav a:hover{color:var(--ink);background:rgba(77,159,236,.12)}
+
+  section{padding:42px 0 8px}
+  .section-head{display:flex;align-items:baseline;gap:14px;margin-bottom:26px}
+  .section-head h2{font-family:'Oswald',sans-serif;font-weight:600;font-size:clamp(24px,4vw,34px);text-transform:uppercase;letter-spacing:.01em}
+  .section-head .num{font-family:'Oswald',sans-serif;font-weight:700;font-size:18px;color:var(--orange);border:1px solid var(--orange);border-radius:8px;padding:2px 9px;flex-shrink:0}
+
+  /* CADENCE DASHBOARD — the anchor, prominent */
+  .cadence{
+    background:linear-gradient(180deg, rgba(245,185,66,.10), rgba(245,185,66,.04));
+    border:1px solid rgba(245,185,66,.35);
+    border-radius:20px; padding:28px 24px; margin-bottom:14px;
+    box-shadow:0 18px 50px -20px rgba(245,185,66,.15);
+  }
+  .cadence-eyebrow{
+    font-family:'Oswald',sans-serif;letter-spacing:.18em;text-transform:uppercase;
+    font-size:13px;color:var(--gold);font-weight:700;margin-bottom:6px;
+  }
+  .cadence-title{
+    font-family:'Oswald',sans-serif;font-weight:600;font-size:clamp(22px,3.5vw,28px);
+    text-transform:uppercase;margin-bottom:18px;letter-spacing:.01em;
+  }
+  .cadence-label{
+    font-family:'Oswald',sans-serif;letter-spacing:.14em;text-transform:uppercase;
+    font-size:11px;color:var(--muted);margin-bottom:12px;font-weight:600;
+  }
+  .process-grid{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px;
+  }
+  .process-cell{
+    background:rgba(15,32,52,.7);border:1px solid var(--line);border-radius:14px;
+    padding:16px 8px;text-align:center;transition:transform .2s, border-color .2s;
+  }
+  .process-cell:hover{transform:translateY(-2px);border-color:rgba(245,185,66,.5)}
+  .process-cell .k{
+    font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:8px;
+  }
+  .process-cell .v{
+    font-family:'Oswald',sans-serif;font-size:clamp(28px,4vw,38px);font-weight:700;
+    color:var(--ink);line-height:1;margin-bottom:6px;
+  }
+  .process-cell.warn .v{color:var(--orange)}
+  .process-cell .u{font-size:11px;color:var(--muted);font-style:italic}
+
+  .scoreboard-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;
+  }
+  .score-cell{
+    background:rgba(15,32,52,.7);border:1px solid var(--line);border-radius:14px;
+    padding:14px 8px;text-align:center;
+  }
+  .score-cell.final{
+    background:linear-gradient(180deg, rgba(255,107,26,.15), rgba(255,107,26,.05));
+    border-color:rgba(255,107,26,.55);
+    box-shadow:0 0 24px -8px rgba(255,107,26,.4);
+  }
+  .score-cell .k{
+    font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:8px;
+  }
+  .score-cell .v{
+    font-family:'Oswald',sans-serif;font-size:clamp(28px,4vw,40px);font-weight:700;
+    color:var(--ink);line-height:1;
+  }
+  .score-cell.final .v{color:var(--orange)}
+
+  .self-check{
+    background:rgba(77,159,236,.08);border-left:3px solid var(--blue);
+    border-radius:0 12px 12px 0;padding:14px 18px;font-size:14.5px;color:#c7d6e6;
+    display:flex;flex-wrap:wrap;gap:6px 18px;
+  }
+  .self-check b{color:var(--blue);font-family:'Oswald',sans-serif;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+
+  /* ACTION CARDS */
+  .actions{display:grid;gap:14px;margin-top:10px}
+  .action{
+    background:linear-gradient(180deg, var(--card), #0a1828);
+    border:1px solid var(--line);border-radius:16px;
+    display:flex;gap:0;overflow:hidden;
+    box-shadow:0 12px 30px -16px rgba(0,0,0,.6);
+    transition:transform .15s, border-color .2s;
+  }
+  .action:hover{transform:translateX(2px)}
+  .action.lead{border-color:rgba(255,107,26,.4);box-shadow:0 18px 40px -16px rgba(255,107,26,.2)}
+  .action .num{
+    background:var(--orange);color:#081320;
+    font-family:'Oswald',sans-serif;font-weight:700;font-size:24px;
+    display:flex;align-items:center;justify-content:center;
+    min-width:54px;flex-shrink:0;
+  }
+  .action.def .num{background:var(--blue)}
+  .action .body{padding:16px 20px;flex:1;min-width:0}
+  .action h3{
+    font-family:'Oswald',sans-serif;font-weight:600;font-size:18px;
+    color:var(--orange);margin-bottom:10px;letter-spacing:.01em;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  }
+  .action.def h3{color:var(--blue)}
+  .action .top-pri{
+    font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--gold);font-weight:600;
+    background:rgba(245,185,66,.12);padding:2px 8px;border-radius:6px;
+    border:1px solid rgba(245,185,66,.3);
+  }
+  .action ul{list-style:none}
+  .action li{
+    position:relative;padding-left:18px;margin-bottom:7px;font-size:14.5px;
+    color:#c7d6e6;line-height:1.5;
+  }
+  .action li::before{
+    content:'▸';position:absolute;left:0;top:0;color:var(--orange);
+    font-weight:700;font-size:13px;
+  }
+  .action.def li::before{color:var(--blue)}
+  .action li b{color:var(--ink);font-weight:600}
+  .action .shout{color:var(--orange);font-weight:700;letter-spacing:.02em}
+  .action.def .shout{color:var(--gold)}
+
+  /* Quote-style calls in Talk on D */
+  .call-list li b{
+    background:rgba(77,159,236,.12);padding:1px 8px;border-radius:5px;
+    border:1px solid rgba(77,159,236,.25);
+    font-family:'Oswald',sans-serif;letter-spacing:.02em;
+    color:var(--blue);font-weight:600;
+  }
+  .call-list li.recruit-note{
+    margin-top:10px;padding-top:10px;
+    border-top:1px dashed rgba(143,166,189,.3);
+    font-style:italic;color:var(--muted);font-size:13.5px;
+  }
+  .call-list li.recruit-note b{
+    background:transparent;border:none;padding:0;
+    color:var(--gold);font-style:normal;
+  }
+
+  footer{
+    margin-top:60px;padding-top:24px;border-top:1px solid var(--line);
+    color:var(--muted);font-size:14px;text-align:center;line-height:1.8;
+  }
+  footer .accent{color:var(--orange);font-weight:600}
+
+  @media(max-width:760px){
+    .process-grid{grid-template-columns:repeat(2,1fr)}
+    .process-grid > *:last-child{grid-column:1 / -1}
+    .scoreboard-grid{grid-template-columns:repeat(2,1fr)}
+    .action .num{min-width:44px;font-size:20px}
+  }
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <div class="eyebrow">In-Game Checklist &nbsp;·&nbsp; Pre-Game Scan</div>
+  <h1>Oliver<br><span class="accent">Stay on Cadence.</span></h1>
+  <div class="sub">
+    <span class="tag-badge">● Target: 28+ PPG</span>
+    <span>Combo G/W</span><span class="dot"></span>
+    <span>Built from Coach Sims's RBA breakdown</span><span class="dot"></span>
+    <span>Discipline = consistency</span>
+  </div>
+</div></header>
+
+<nav><div class="wrap">
+  <a href="#cadence">Cadence</a>
+  <a href="#offense">Offense</a>
+  <a href="#defense">Defense</a>
+</div></nav>
+
+<!-- ============ CADENCE — THE ANCHOR ============ -->
+<section id="cadence"><div class="wrap">
+  <div class="cadence">
+    <div class="cadence-eyebrow">★ The Anchor</div>
+    <div class="cadence-title">Quarterly Cadence — Know Where You Are</div>
+
+    <div class="cadence-label">Process targets — every 8 minutes you should be at or above:</div>
+    <div class="process-grid">
+      <div class="process-cell"><div class="k">Shots</div><div class="v">5</div><div class="u">per quarter</div></div>
+      <div class="process-cell"><div class="k">Threes</div><div class="v">1</div><div class="u">per quarter</div></div>
+      <div class="process-cell"><div class="k">FT Trips</div><div class="v">1–2</div><div class="u">per quarter</div></div>
+      <div class="process-cell"><div class="k">Assists</div><div class="v">1+</div><div class="u">per quarter</div></div>
+      <div class="process-cell warn"><div class="k">Turnovers</div><div class="v">&lt;1</div><div class="u">per quarter</div></div>
+    </div>
+
+    <div class="cadence-label">Scoreboard check — where the points should be:</div>
+    <div class="scoreboard-grid">
+      <div class="score-cell"><div class="k">End of Q1</div><div class="v">7+</div></div>
+      <div class="score-cell"><div class="k">Halftime</div><div class="v">14+</div></div>
+      <div class="score-cell"><div class="k">End of Q3</div><div class="v">21+</div></div>
+      <div class="score-cell final"><div class="k">Final</div><div class="v">28+</div></div>
+    </div>
+
+    <div class="self-check">
+      <span><b>Behind pace?</b> Get more aggressive — hunt your shot.</span>
+      <span><b>Ahead?</b> Stay disciplined — keep the cadence, don't coast.</span>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ OFFENSE ============ -->
+<section id="offense"><div class="wrap">
+  <div class="section-head"><span class="num">O</span><h2>Offense</h2></div>
+  <div class="actions">
+
+    <div class="action lead">
+      <div class="num">1</div>
+      <div class="body">
+        <h3>Hunt Open Space — Flash & Yell <span class="shout">"BALL!"</span> <span class="top-pri">★ Top priority</span></h3>
+        <ul>
+          <li><b>Lane opens up:</b> flash to the paint hard, yell <span class="shout">"BALL!"</span> — be the read.</li>
+          <li><b>Catch in the lane:</b> turn and finish, OR kick to the open shooter. Don't dribble back out.</li>
+          <li><b>Off the catch on the wing:</b> if the gap is there, attack on the FIRST dribble.</li>
+          <li><b>Strong move, one direction:</b> left OR right — commit. Hesi-cross into nothing = turnover.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="num">2</div>
+      <div class="body">
+        <h3>Impose Your Will — Shoot</h3>
+        <ul>
+          <li><b>Open on the catch = SHOOT.</b> You're 7-for-8. Putting it on the floor when open = wasted possession.</li>
+          <li><b>Closeout coming at you:</b> ONE dribble into the pull-up. Not 2, not 3.</li>
+          <li><b>Rim attack every quarter:</b> at least one. FTs are points the defense can't stop.</li>
+          <li><b>First shot in the first 3 minutes.</b> Set the tone — don't disappear in Q1.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div></section>
+
+<!-- ============ DEFENSE ============ -->
+<section id="defense"><div class="wrap">
+  <div class="section-head"><span class="num" style="color:var(--blue);border-color:var(--blue)">D</span><h2>Defense</h2></div>
+  <div class="actions">
+
+    <div class="action def">
+      <div class="num">3</div>
+      <div class="body">
+        <h3>Stay Down — Length, Not Leaping</h3>
+        <ul>
+          <li><b>Pump fake:</b> feet stay on the floor. Hands up, don't bite.</li>
+          <li><b>Real shot:</b> contest STRAIGHT UP, don't drift into the shooter — no foul.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="action def">
+      <div class="num">4</div>
+      <div class="body">
+        <h3>Don't Lose Your Man Off-Ball</h3>
+        <ul>
+          <li><b>See man AND ball:</b> head on a swivel. Can't see both = you're wrong.</li>
+          <li><b>Get screened:</b> FIND YOUR MAN FIRST, then locate the ball. Don't stand up to watch.</li>
+          <li><b>Sit down off-ball.</b> Standing = late to everything.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="action def">
+      <div class="num">5</div>
+      <div class="body">
+        <h3>Closeouts — Squeaky Shoes, Late Hands</h3>
+        <ul>
+          <li><b>Sprint, then chop:</b> full sprint to close, short choppy steps (squeaky shoes) into the contest.</li>
+          <li><b>High-to-low:</b> stay low approaching, hand UP late. Low feet beat the fake; late hands take the shot.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="action def">
+      <div class="num">6</div>
+      <div class="body">
+        <h3>Box Out & Rebound</h3>
+        <ul>
+          <li><b>Shot up:</b> find a body, hit first, THEN chase. No flying past your block-out.</li>
+          <li><b>Secure → push:</b> if you grab it, locate quick — be the outlet or start the break yourself.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="action def">
+      <div class="num">7</div>
+      <div class="body">
+        <h3>Talk On D — Tactical Calls</h3>
+        <ul class="call-list">
+          <li><b>"Screen left!" / "Screen right!"</b> — BEFORE your teammate gets hit.</li>
+          <li><b>"Switch!" or "Stay!"</b> — decide on every screen. Silence = breakdown.</li>
+          <li><b>"Ball, ball, ball!"</b> — after rotation, claim the ball.</li>
+          <li><b>"Shot!"</b> — yell when ball goes up so everyone boxes out.</li>
+          <li><b>"Dead!"</b> — dribble is dead, crowd him.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="action def">
+      <div class="num">8</div>
+      <div class="body">
+        <h3>Lead With Your Voice — Lift the Team</h3>
+        <ul class="call-list">
+          <li><b>Teammate misses a shot:</b> <span class="shout">"YEAH! Next one!"</span> — pick him up immediately. No heads down.</li>
+          <li><b>Teammate turns it over:</b> <span class="shout">"My bad — get the next one!"</span> Own it with him, sprint back.</li>
+          <li><b>Shot goes up and nobody's hitting bodies:</b> <span class="shout">"REBOUND! BOX OUT!"</span></li>
+          <li><b>Energy drops:</b> be the one who lifts it. Clap, talk, point — visible, audible.</li>
+          <li><b>After a big play (yours or a teammate's):</b> celebrate it loud. Energy is contagious.</li>
+          <li class="recruit-note"><b>Why it matters:</b> college coaches scout for vocal leaders. Tape doesn't pick up X's and O's as well as it picks up <i>who's running the floor</i>.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  Process drives the points. <span class="accent">Cadence drives the consistency.</span> Hunt Open Space leads.
+</div></footer>
+
+</body>
+</html>
