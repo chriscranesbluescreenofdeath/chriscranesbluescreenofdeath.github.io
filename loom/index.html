@@ -10,7 +10,7 @@
 </head>
 <body>
 <header class="header wrap"><div class="header-line"><div><div class="brand">THE LOOM</div><div class="subbrand">A clearer view of everything in motion</div></div><div class="date" id="date"></div></div><nav class="nav" aria-label="Dashboard domains" id="nav"></nav></header>
-<main class="main wrap"><div class="intro"><div><div class="eyebrow" id="eyebrow">Your workspace</div><h1 class="title" id="title">Overview</h1><p class="description" id="description"></p></div><div class="sync" id="sync"><span id="syncText">THE LOOM · CONNECTING</span> <button id="refreshLive" type="button" class="sync-button" title="Refresh registered sources">↻ Refresh</button> <button id="registrySettings" type="button" class="sync-button" title="Configure Master Registry">⚙ Registry</button></div></div><div id="liveError" class="data-error-box hidden" role="status"></div><div class="filters"><div class="filter-group"><label for="projectFilter">Project</label><select id="projectFilter" class="input select"></select></div><div class="filter-group"><label for="statusFilter">Status</label><select id="statusFilter" class="input select"><option value="Active" selected>Active</option><option value="In Progress">In Progress</option><option value="Blocked">Blocked</option><option value="Open">Open</option><option value="Waiting">Waiting</option><option value="Deferred">Deferred</option><option value="Complete">Complete</option><option value="All">All statuses</option></select></div><div class="filter-group search"><label for="search">Search</label><input id="search" class="input" placeholder="Search actions, projects, notes..." type="search"></div></div><div class="kpis" id="kpis"></div><div class="section-head"><h2>Active actions</h2><span id="count"></span></div><div class="table-box table-scroll"><table class="data-table"><thead><tr><th>Project</th><th>Next action</th><th>Status</th><th>Priority</th><th>Due</th><th></th></tr></thead><tbody id="rows"></tbody></table><div id="empty" class="empty hidden">No actions match the current filters.</div></div><div class="bottom-grid"><div><div class="section-head"><h2>Waiting on</h2><span id="waitingCount"></span></div><div class="simple-list" id="waiting"></div></div><div><div class="section-head"><h2>Upcoming</h2><span id="upcomingCount"></span></div><div class="simple-list" id="upcoming"></div></div></div><div class="section-head"><h2>Resources</h2><span>Reference points</span></div><div class="simple-list" id="resources"></div><div class="sample-notice">Project endpoints are managed in The Loom Master Registry. Humanaut uses your published CSV endpoint; other domains remain illustrative until configured. Read-only; nothing is written back.</div><footer class="foot"><span>THE LOOM · Personal operating view</span><span>Built as a static front-end prototype</span></footer></main>
+<main class="main wrap"><div class="intro"><div><div class="eyebrow" id="eyebrow">Your workspace</div><h1 class="title" id="title">Overview</h1><p class="description" id="description"></p></div><div class="sync" id="sync"><span id="syncText">THE LOOM · CONNECTING</span> <button id="refreshLive" type="button" class="sync-button" title="Refresh registered sources">↻ Refresh</button> <button id="registrySettings" type="button" class="sync-button" title="Configure Master Registry">⚙ Registry</button></div></div><div id="liveError" class="data-error-box hidden" role="status"></div><div class="filters"><div class="filter-group"><label for="projectFilter">Project</label><select id="projectFilter" class="input select"></select></div><div class="filter-group"><label for="statusFilter">Status</label><select id="statusFilter" class="input select"><option value="Active" selected>Active</option><option value="Active · Action Required">Active · Action Required</option><option value="Active · In Progress">Active · In Progress</option><option value="Complete">Complete</option><option value="All">All statuses</option></select></div><div class="filter-group search"><label for="search">Search</label><input id="search" class="input" placeholder="Search actions, projects, notes..." type="search"></div></div><div class="kpis" id="kpis"></div><div class="section-head"><h2>Projects &amp; next steps</h2><span id="count"></span></div><div class="table-box table-scroll"><table class="data-table"><thead><tr><th>Project</th><th>Next action</th><th>Action status</th><th>Priority</th><th>Due</th><th></th></tr></thead><tbody id="rows"></tbody></table><div id="empty" class="empty hidden">No actions match the current filters.</div></div><div class="section-head"><h2>Resources</h2><span>Reference points</span></div><div class="simple-list" id="resources"></div><div id="briefsSection" class="hidden"><div class="section-head"><h2>Briefs</h2><span>CCFA · Humanaut</span></div><div class="simple-list" id="briefs"></div></div><div class="sample-notice">Project endpoints are managed in The Loom Master Registry. Humanaut uses your published CSV endpoint; other domains remain illustrative until configured. Read-only; nothing is written back.</div><footer class="foot"><span>THE LOOM · Personal operating view</span><span>Built as a static front-end prototype</span></footer></main>
 <script>
 'use strict';
 const domains=[['Overview','Everything that needs attention across your worlds.'],['CCFA','Fine art commissions, relationships, production, and outreach.'],['R2DX','Oliver’s recruiting, academic milestones, and outreach.'],['Family','Family schedules and shared responsibilities.'],['Personal','The small and significant things outside work.']];
@@ -24,6 +24,12 @@ let entries=[
 {domain:'Personal',project:'Marfa trip',action:'Review weekend itinerary',status:'Active',priority:'Medium',due:'Nov 7',notes:'Review logistics and packing.'}
 ];
 const resourceMap={Overview:['CCFA project tracker','R2DX recruiting tracker','Family calendar','Personal tracker'],CCFA:['Humanaut tracker','Designer & architect outreach tracker','Art production references'],R2DX:['R2DX recruiting tracker','Oliver’s public profile','College target list'],Family:['Family calendar','School resources'],Personal:['Personal tracker','Marfa itinerary']};
+const briefLinks=[
+['Humanaut Program Brief','https://docs.google.com/document/d/1pjsehSkCUXd6eaGgQr9fOmpNft3R6OmwulQsx16p7MM/edit'],
+['Humanaut × Heitler — Architecture Integration Meeting Brief','https://docs.google.com/document/d/1rXuo-0v7H0-0QZBRsSsAWeNSndcBX5LUCeTWyeKT6iI/edit'],
+['Palm Desert Artwork Brief','https://drive.google.com/file/d/1gfFBl7RtIJLLxqaWJHLA85URpgaMdaGN/view'],
+['Humanaut Collection — Client Experience Positioning Brief','https://docs.google.com/document/d/1TIw-XWuaVJYXT4AEstPhTUKw1696TAAy/edit']
+];
 const $=s=>document.querySelector(s);let current=localStorage.getItem('loom_domain')||'Overview';if(!domains.some(d=>d[0]===current))current='Overview';
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const nav=$('#nav');for(const [name] of domains){let b=document.createElement('button');b.className='tab';b.textContent=name;b.type='button';b.addEventListener('click',()=>{current=name;localStorage.setItem('loom_domain',name);$('#projectFilter').value='All';$('#statusFilter').value='Active';$('#search').value='';render()});nav.append(b)}
@@ -35,15 +41,29 @@ function render(){
 $('#eyebrow').textContent=current==='Overview'?'All domains':current+' · Focus view';$('#title').textContent=current==='Overview'?'Your overview':current;$('#description').textContent=domains.find(d=>d[0]===current)[1];
 const previous=$('#projectFilter').value||'All';const projs=[...new Set(visibleDomain().map(x=>x.project))].sort();$('#projectFilter').innerHTML='<option value="All">All projects</option>'+projs.map(p=>`<option value="${escape(p)}">${escape(p)}</option>`).join('');$('#projectFilter').value=projs.includes(previous)?previous:'All';
 const project=$('#projectFilter').value,status=$('#statusFilter').value,q=$('#search').value.trim().toLowerCase();
-let data=visibleDomain().filter(x=>(project==='All'||x.project===project)&&(status==='All'||(status==='Active'?x.status!=='Complete':x.status===status))&&(!q||[x.project,x.action,x.notes,x.priority,x.status].join(' ').toLowerCase().includes(q)));
-const counts=[data.length,data.filter(x=>x.status!=='Complete').length,data.filter(x=>x.status==='Waiting').length,data.filter(x=>x.status==='Open').length];
-$('#kpis').innerHTML=['Matching items','Not complete','Waiting on','Open'].map((k,i)=>`<div class="kpi"><div class="kpi-val">${counts[i]}</div><div class="kpi-label">${k}</div></div>`).join('');
-$('#count').textContent=data.length+' actions / sites';$('#empty').classList.toggle('hidden',data.length>0);
-$('#rows').innerHTML=data.map((x,i)=>`<tr><td><span class="project">${escape(x.project)}</span>${current==='Overview'?`<div class="light" style="margin-top:3px;font-size:11px">${escape(x.domain)}</div>`:''}</td><td class="action">${escape(x.action)}</td><td><span class="pill ${x.status}">${escape(x.status)}</span></td><td class="light">${escape(x.priority)}</td><td class="light" style="white-space:nowrap">${escape(x.due)}</td><td><button class="row-open" data-i="${i}" aria-expanded="false">Details</button></td></tr><tr class="details-row"><td colspan="6" style="padding:0;border:0"><div class="extra" id="detail-${i}">${escape(x.notes)}${x.stage?`<div style="margin-top:7px"><strong>Tracker stage:</strong> ${escape(x.stage)}</div>`:''}${x.source?`<a href="${escape(x.source)}" target="_blank" rel="noopener" style="color:#384b57;display:inline-block;margin-top:8px">Open source tracker ↗</a>`:''}</div></td></tr>`).join('');
+const stateOf=x=>x.projectState||(x.status==='Complete'?'Complete':'Active');
+const required=x=>x.actionStatus==='Action Required'||(!x.actionStatus&&['Open','Waiting','Blocked','Deferred'].includes(x.status));
+const matchStatus=x=>{
+ if(x.id==='PROGRAM')return true; // Keep the program-wide action visible in every view.
+ const state=stateOf(x);
+ if(status==='All')return true;
+ if(status==='Complete')return state==='Complete';
+ if(state!=='Active')return false;
+ if(status==='Active')return true;
+ if(status==='Active · Action Required')return required(x);
+ if(status==='Active · In Progress')return !required(x);
+ return false;
+};
+let data=visibleDomain().filter(x=>(project==='All'||x.project===project||x.id==='PROGRAM')&&matchStatus(x)&&(!q||x.id==='PROGRAM'||[x.project,x.action,x.notes,x.priority,x.status,x.stage].join(' ').toLowerCase().includes(q)));
+const counts=[data.length,data.filter(x=>stateOf(x)==='Active').length,data.filter(required).length,data.filter(x=>stateOf(x)==='Complete').length];
+$('#kpis').innerHTML=['Showing','Active sites','Action required','Complete'].map((k,i)=>`<div class="kpi"><div class="kpi-val">${counts[i]}</div><div class="kpi-label">${k}</div></div>`).join('');
+$('#count').textContent=data.length+' records';$('#empty').classList.toggle('hidden',data.length>0);
+$('#rows').innerHTML=data.map((x,i)=>`<tr><td><span class="project">${escape(x.project)}</span>${current==='Overview'?`<div class="light" style="margin-top:3px;font-size:11px">${escape(x.domain)}</div>`:''}</td><td class="action">${escape(x.action)}</td><td><span class="pill ${x.status.replace(/\s+/g,'')}">${escape(x.status)}</span></td><td class="light">${escape(x.priority)}</td><td class="light" style="white-space:nowrap">${escape(x.due)}</td><td><button class="row-open" data-i="${i}" aria-expanded="false">Details</button></td></tr><tr class="details-row"><td colspan="6" style="padding:0;border:0"><div class="extra" id="detail-${i}">${escape(x.notes)}${x.stage?`<div style="margin-top:7px"><strong>Tracker stage:</strong> ${escape(x.stage)}</div>`:''}${x.source?`<a href="${escape(x.source)}" target="_blank" rel="noopener" style="color:#384b57;display:inline-block;margin-top:8px">Open source tracker ↗</a>`:''}</div></td></tr>`).join('');
 $('#rows').querySelectorAll('.row-open').forEach(b=>b.addEventListener('click',()=>{const d=$('#detail-'+b.dataset.i);d.classList.toggle('show');b.setAttribute('aria-expanded',d.classList.contains('show'));b.textContent=d.classList.contains('show')?'Close':'Details'}));
-const waiting=data.filter(x=>x.status==='Waiting');$('#waitingCount').textContent=waiting.length+' items';$('#waiting').innerHTML=waiting.length?waiting.map(x=>`<div class="simple-line"><div><strong>${escape(x.project)}</strong><small>${escape(x.action)}</small></div><time>${escape(x.due)}</time></div>`).join(''):'<div class="empty">Nothing waiting in this view.</div>';
-const upcoming=data.filter(x=>x.status!=='Complete'&&x.status!=='Deferred').slice(0,4);$('#upcomingCount').textContent=upcoming.length+' highlighted';$('#upcoming').innerHTML=upcoming.length?upcoming.map(x=>`<div class="simple-line"><div><strong>${escape(x.action)}</strong><small>${escape(x.project)}</small></div><time>${escape(x.due)}</time></div>`).join(''):'<div class="empty">No upcoming items in this view.</div>';
 $('#resources').innerHTML=(resourceMap[current]||[]).map(n=>`<div class="simple-line"><div><strong>${n==='Humanaut tracker'?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="https://docs.google.com/spreadsheets/d/1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ/edit" target="_blank" rel="noopener">Humanaut tracker ↗</a>':escape(n)}</strong><small>${n==='Humanaut tracker'?'Live tracker source':'Reference · integration pending'}</small></div></div>`).join('');
+$('#briefsSection').classList.toggle('hidden',current!=='CCFA');
+$('#briefs').innerHTML=current==='CCFA'?briefLinks.map(([title,url])=>`<div class="simple-line"><div><strong><a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="${escape(url)}" target="_blank" rel="noopener">${escape(title)} ↗</a></strong></div></div>`).join(''):'';
+
 }
 
 // The Loom bootstrap: the registry is the configuration source. The Humanaut
@@ -141,14 +161,12 @@ function parseCsv(text){
   if(row.length||cell){row.push(cell);rows.push(row)}
   return rows;
 }
-function normalizeHumanautStage(stage,notes){
-  const s=(stage||'').toLowerCase(),n=(notes||'').toLowerCase();
-  if(/payment received|completed site|installed|complete[d]? site/.test(s))return 'Complete';
-  if(/defer|on hold/.test(n))return 'Deferred';
-  if(/blocked/.test(n))return 'Blocked';
-  if(/awaiting|waiting|pending|follow up when|as soon as .* replies|not yet provided|not yet scheduled/.test(n))return 'Waiting';
-  if(/production|shipped|arrived at site|pricing sent/.test(s))return 'In Progress';
-  return 'Open';
+// Canonical site lifecycle: tracker column D is the single source of truth.
+function normalizeHumanautStage(stage){
+ const s=String(stage||'').trim().toLowerCase();
+ if(s==='payment received'||s==='completed site'||s==='complete site')return 'Complete';
+ if(s==='site identified'||s==='not started'||!s)return 'Pipeline';
+ return 'Active'; // Includes Installed until the final payment milestone.
 }
 function humanDate(d){if(!d||!/\d/.test(d))return '—';const x=new Date(d);return Number.isNaN(x.getTime())?String(d):x.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 function toHumanautActions(csv,sourceUrl){
@@ -162,10 +180,13 @@ function toHumanautActions(csv,sourceUrl){
     const id=cell(r,'Project ID').trim(),place=cell(r,'Project / Address').trim(),stage=cell(r,'Status / Notes').trim();
     const next=cell(r,'Next Steps / Notes').trim();
     const prod=cell(r,'Expected Production Complete').trim(),install=cell(r,'Install Scheduled').trim();
-    const status=normalizeHumanautStage(stage,next);
-    const notes=[next?null:'No explicit next step recorded in tracker.',stage?'Current milestone: '+stage:null,prod?'Expected production complete: '+prod:null,install?'Install scheduled: '+install:null].filter(Boolean).join(' ');
-    return {domain:'CCFA',project:id==='PROGRAM'?'Humanaut · Program':`Humanaut · ${place}`,action:next||stage||'Site identified — next step not entered',status,priority: '—',due:install?humanDate(install):prod?humanDate(prod):'—',notes,id,stage,source:sourceUrl||BOOTSTRAP_HUMANAUT.source};
-  }).filter(item=>item.status!=='Complete'&&(item.id==='PROGRAM'||item.action!=='Site Identified'||item.notes));
+    const projectState=id==='PROGRAM'?'Program':normalizeHumanautStage(stage);
+    const actionStatus=next?'Action Required':'In Progress';
+    const status=projectState==='Complete'?'Complete':projectState==='Pipeline'?'Pipeline':actionStatus;
+    const notes=[next?null:'No next step recorded in column E.',stage?'Current milestone: '+stage:null,prod?'Expected production complete: '+prod:null,install?'Install scheduled: '+install:null].filter(Boolean).join(' ');
+    return {domain:'CCFA',project:id==='PROGRAM'?'Humanaut · Program':`Humanaut · ${place}`,action:next||'No next step recorded',status,projectState,actionStatus,priority:'—',due:install?humanDate(install):prod?humanDate(prod):'—',notes,id,stage,source:sourceUrl||BOOTSTRAP_HUMANAUT.source};
+
+  });
 }
 let loading=false;
 async function loadRegistry(){
