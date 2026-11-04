@@ -70,7 +70,7 @@ $('#briefs').innerHTML=current==='CCFA'?briefLinks.map(([title,url])=>`<div clas
 // published CSV is a temporary first-run fallback until Sources is published.
 const LOOM_REGISTRY_SHEET='https://docs.google.com/spreadsheets/d/13_gjX1xHgJsO4iL0fAZ3Jzp3vATS-u_Y-IMsLUagQEo/edit';
 const REGISTRY_CSV_DEFAULT=''; // Paste published Sources link once in Registry dialog.
-const BOOTSTRAP_HUMANAUT={domain:'CCFA',project:'Humanaut',adapter:'humanaut_sites',enabled:true,
+const BOOTSTRAP_HUMANAUT={domain:'CCFA',project:'Humanaut',adapter:'humanaut_sites',enabled:true,pipelineStages:'Site Identified;Not Started',completeStages:'Payment Received;Completed Site',alwaysShowProgram:true,actionColumn:'Next Steps / Notes',
  csv:'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0zav3z-Rse6H0VlMJ_WvDQE_v1Sf4Hqrn1r2yZlZNWvopnV9Jp2izGCSgJb62ZL145T8c6lPDIo0q/pub?gid=1653690923&single=true&output=csv',
  source:'https://docs.google.com/spreadsheets/d/1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ/edit'};
 let sources=[BOOTSTRAP_HUMANAUT];
@@ -132,7 +132,7 @@ function registryRows(csv){
  const rows=parseCsv(csv), idx=rows.findIndex(r=>r[0]?.trim()==='Enabled'&&r[4]?.trim()==='Published CSV Endpoint');
  if(idx<0)throw Error('Published tab is not the Sources registry');
  const h=rows[idx].map(x=>x.trim());const field=(r,k)=>String(r[h.indexOf(k)]||'').trim();
- return rows.slice(idx+1).map(r=>({enabled:field(r,'Enabled').toUpperCase()==='TRUE',domain:field(r,'Domain'),project:field(r,'Project'),adapter:field(r,'Adapter'),csv:field(r,'Published CSV Endpoint'),source:field(r,'Source Spreadsheet')}))
+ return rows.slice(idx+1).map(r=>({enabled:field(r,'Enabled').toUpperCase()==='TRUE',domain:field(r,'Domain'),project:field(r,'Project'),adapter:field(r,'Adapter'),csv:field(r,'Published CSV Endpoint'),source:field(r,'Source Spreadsheet'),pipelineStages:field(r,'Pipeline stages')||BOOTSTRAP_HUMANAUT.pipelineStages,completeStages:field(r,'Complete stages')||BOOTSTRAP_HUMANAUT.completeStages,alwaysShowProgram:field(r,'Always show program')!=='FALSE',actionColumn:field(r,'Action notes column')||BOOTSTRAP_HUMANAUT.actionColumn}))
  .filter(r=>r.enabled&&acceptedCsvUrl(r.csv));
 }
 function configureRegistry(){
@@ -162,14 +162,16 @@ function parseCsv(text){
   return rows;
 }
 // Canonical site lifecycle: tracker column D is the single source of truth.
-function normalizeHumanautStage(stage){
+function normalizeHumanautStage(stage,src=BOOTSTRAP_HUMANAUT){
  const s=String(stage||'').trim().toLowerCase();
- if(s==='payment received'||s==='completed site'||s==='complete site')return 'Complete';
- if(s==='site identified'||s==='not started'||!s)return 'Pipeline';
+ const list=str=>String(str||'').toLowerCase().split(';').map(x=>x.trim()).filter(Boolean);
+ if(list(src.completeStages).includes(s))return 'Complete';
+ if(!s||list(src.pipelineStages).includes(s))return 'Pipeline';
  return 'Active'; // Includes Installed until the final payment milestone.
 }
 function humanDate(d){if(!d||!/\d/.test(d))return '—';const x=new Date(d);return Number.isNaN(x.getTime())?String(d):x.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
-function toHumanautActions(csv,sourceUrl){
+function toHumanautActions(csv,src=BOOTSTRAP_HUMANAUT){
+ const sourceUrl=src.source;
   const rows=parseCsv(csv);const headerIndex=rows.findIndex(r=>String(r[0]||'').trim()==='Project ID'&&String(r[1]||'').trim()==='Project / Address');
   const header=headerIndex>=0?rows[headerIndex].map(x=>x.trim()):[];
   const known={'Project ID':0,'Project / Address':1,'Status / Notes':3,'Next Steps / Notes':4,'Expected Production Complete':14,'Install Scheduled':20};
@@ -178,9 +180,9 @@ function toHumanautActions(csv,sourceUrl){
   if(headerIndex<0&&!data.some(r=>/^(HN-\d+|PROGRAM)$/.test((r[0]||'').trim())))throw new Error('This endpoint did not return the Humanaut Tracker table. Check the published tab and URL.');
   return data.filter(r=>/^(HN-\d+|PROGRAM)$/.test((r[0]||'').trim())&&r[1]).map(r=>{
     const id=cell(r,'Project ID').trim(),place=cell(r,'Project / Address').trim(),stage=cell(r,'Status / Notes').trim();
-    const next=cell(r,'Next Steps / Notes').trim();
+    const next=cell(r,src.actionColumn||'Next Steps / Notes').trim();
     const prod=cell(r,'Expected Production Complete').trim(),install=cell(r,'Install Scheduled').trim();
-    const projectState=id==='PROGRAM'?'Program':normalizeHumanautStage(stage);
+    const projectState=id==='PROGRAM'?'Program':normalizeHumanautStage(stage,src);
     const actionStatus=next?'Action Required':'In Progress';
     const status=projectState==='Complete'?'Complete':projectState==='Pipeline'?'Pipeline':actionStatus;
     const notes=[next?null:'No next step recorded in column E.',stage?'Current milestone: '+stage:null,prod?'Expected production complete: '+prod:null,install?'Install scheduled: '+install:null].filter(Boolean).join(' ');
@@ -205,7 +207,7 @@ async function loadRegistry(){
   try{
    const csv=await retrieveCSV(src.csv);
    if(src.adapter==='humanaut_sites'){
-    const actions=toHumanautActions(csv,src.source);
+    const actions=toHumanautActions(csv,src);
     if(!actions.length)throw Error('No matching site rows');
     dynamic.push(...actions.map(a=>({...a,domain:src.domain})));successful.push(src.project);
    }else{errors.push(src.project+': adapter '+src.adapter+' not connected yet');}
