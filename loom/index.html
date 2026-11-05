@@ -24,6 +24,7 @@ let entries=[
 {domain:'Personal',project:'Marfa trip',action:'Review weekend itinerary',status:'Active',priority:'Medium',due:'Nov 7',notes:'Review logistics and packing.'}
 ];
 const resourceMap={Overview:['CCFA project tracker','R2DX recruiting tracker','Family calendar','Personal tracker'],CCFA:['Humanaut tracker','Designer & architect outreach tracker','Art production references'],R2DX:['R2DX recruiting tracker','Oliver’s public profile','College target list'],Family:['Family calendar','School resources'],Personal:['Personal tracker','Marfa itinerary']};
+const loomResourceUrls={'Designer & architect outreach tracker':'https://docs.google.com/spreadsheets/d/1d7b115EtSw0Rh5C1FpwnSA1qa8ipTJlzhuvd8ov4Kp8/edit','Personal tracker':'https://docs.google.com/spreadsheets/d/1ZL80iKDwNCRDo3SRdPeYg1JKbSlyfhpwUKjKWO51D1c/edit'};
 const briefLinks=[
 ['Humanaut Program Brief','https://docs.google.com/document/d/1pjsehSkCUXd6eaGgQr9fOmpNft3R6OmwulQsx16p7MM/edit'],
 ['Humanaut × Heitler — Architecture Integration Meeting Brief','https://docs.google.com/document/d/1rXuo-0v7H0-0QZBRsSsAWeNSndcBX5LUCeTWyeKT6iI/edit'],
@@ -60,7 +61,7 @@ $('#kpis').innerHTML=['Showing','Active sites','Action required','Complete'].map
 $('#count').textContent=data.length+' records';$('#empty').classList.toggle('hidden',data.length>0);
 $('#rows').innerHTML=data.map((x,i)=>`<tr><td><span class="project">${escape(x.project)}</span>${current==='Overview'?`<div class="light" style="margin-top:3px;font-size:11px">${escape(x.domain)}</div>`:''}</td><td class="action">${escape(x.action)}</td><td><span class="pill ${x.status.replace(/\s+/g,'')}">${escape(x.status)}</span></td><td class="light">${escape(x.priority)}</td><td class="light" style="white-space:nowrap">${escape(x.due)}</td><td><button class="row-open" data-i="${i}" aria-expanded="false">Details</button></td></tr><tr class="details-row"><td colspan="6" style="padding:0;border:0"><div class="extra" id="detail-${i}">${escape(x.notes)}${x.stage?`<div style="margin-top:7px"><strong>Tracker stage:</strong> ${escape(x.stage)}</div>`:''}${x.source?`<a href="${escape(x.source)}" target="_blank" rel="noopener" style="color:#384b57;display:inline-block;margin-top:8px">Open source tracker ↗</a>`:''}</div></td></tr>`).join('');
 $('#rows').querySelectorAll('.row-open').forEach(b=>b.addEventListener('click',()=>{const d=$('#detail-'+b.dataset.i);d.classList.toggle('show');b.setAttribute('aria-expanded',d.classList.contains('show'));b.textContent=d.classList.contains('show')?'Close':'Details'}));
-$('#resources').innerHTML=(resourceMap[current]||[]).map(n=>`<div class="simple-line"><div><strong>${n==='Humanaut tracker'?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="https://docs.google.com/spreadsheets/d/1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ/edit" target="_blank" rel="noopener">Humanaut tracker ↗</a>':escape(n)}</strong><small>${n==='Humanaut tracker'?'Live tracker source':'Reference · integration pending'}</small></div></div>`).join('');
+$('#resources').innerHTML=(resourceMap[current]||[]).map(n=>`<div class="simple-line"><div><strong>${n==='Humanaut tracker'?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="https://docs.google.com/spreadsheets/d/1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ/edit" target="_blank" rel="noopener">Humanaut tracker ↗</a>':loomResourceUrls[n]?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="'+escape(loomResourceUrls[n])+'" target="_blank" rel="noopener">'+escape(n)+' ↗</a>':escape(n)}</strong><small>${n==='Humanaut tracker'?'Live tracker source':'Reference · integration pending'}</small></div></div>`).join('');
 $('#briefsSection').classList.toggle('hidden',current!=='CCFA');
 $('#briefs').innerHTML=current==='CCFA'?briefLinks.map(([title,url])=>`<div class="simple-line"><div><strong><a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="${escape(url)}" target="_blank" rel="noopener">${escape(title)} ↗</a></strong></div></div>`).join(''):'';
 
@@ -190,6 +191,38 @@ function toHumanautActions(csv,src=BOOTSTRAP_HUMANAUT){
 
   });
 }
+
+function readActionTable(csv,headerName){
+ const rows=parseCsv(csv),ix=rows.findIndex(r=>r.some(s=>String(s||'').trim()===headerName));
+ if(ix<0)throw Error('Expected Action Items header not found; publish the Action Items tab');
+ const headers=rows[ix].map(s=>String(s||'').trim().toLowerCase());
+ const get=(r,k)=>{const j=headers.indexOf(k.toLowerCase());return j<0?'':String(r[j]||'').trim()};
+ return {rows:rows.slice(ix+1),get};
+}
+function toCcfaActions(csv,src){
+ const {rows,get}=readActionTable(csv,'Task ID');
+ const tasks=rows.filter(r=>/^CCFA-\d+/i.test(get(r,'Task ID')));
+ if(!tasks.length)throw Error('No CCFA action rows in published CSV');
+ return tasks.map(r=>{
+  const stage=get(r,'Status / Notes'),st=stage.toLowerCase(),next=get(r,'Next Steps / Notes'),deliverable=get(r,'Action / Deliverable');
+  const projectState=st==='complete'?'Complete':(['not started','planning','pipeline','cancelled'].includes(st)?'Pipeline':'Active');
+  const actionStatus=next?'Action Required':'In Progress';
+  const status=projectState==='Active'?actionStatus:projectState;
+  return {domain:src.domain||'CCFA',project:get(r,'Project / Initiative')||'CCFA Sales & Marketing',action:next||deliverable||'No next step recorded',status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Next Action Due')||get(r,'Target Date')||'—',notes:[deliverable,get(r,'Dependencies / Context'),get(r,'Cadence')?'Cadence: '+get(r,'Cadence'):null].filter(Boolean).join(' · '),source:get(r,'Source Link')||src.source};
+ });
+}
+function toPersonalActions(csv,src){
+ const {rows,get}=readActionTable(csv,'Task ID');
+ const tasks=rows.filter(r=>/^PER-\d+/i.test(get(r,'Task ID')));
+ if(!tasks.length)throw Error('No Personal action rows in published CSV');
+ return tasks.map(r=>{
+  const stage=get(r,'Status')||get(r,'Status / Notes'),st=stage.toLowerCase();
+  const projectState=['done','complete','completed','cancelled'].includes(st)?'Complete':'Active';
+  const next=get(r,'Next action')||get(r,'Next Steps / Notes'),actionStatus=next?'Action Required':'In Progress';
+  return {domain:src.domain||'Personal',project:get(r,'Project')||'Personal',action:next||get(r,'Action')||'No next step recorded',status:projectState==='Complete'?'Complete':actionStatus,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due date')||get(r,'Next review')||'—',notes:[get(r,'Action'),get(r,'Notes')].filter(Boolean).join(' · '),source:get(r,'Link')||src.source};
+ });
+}
+
 let loading=false;
 async function loadRegistry(){
  if(loading)return;loading=true;
@@ -210,10 +243,15 @@ async function loadRegistry(){
     const actions=toHumanautActions(csv,src);
     if(!actions.length)throw Error('No matching site rows');
     dynamic.push(...actions.map(a=>({...a,domain:src.domain})));successful.push(src.project);
+   }else if(src.adapter==='ccfa_actions'||src.adapter==='personal_actions'){
+    const actions=src.adapter==='ccfa_actions'?toCcfaActions(csv,src):toPersonalActions(csv,src);
+    dynamic.push(...actions.map(a=>({...a,domain:src.domain})));successful.push(src.project);
    }else{errors.push(src.project+': adapter '+src.adapter+' not connected yet');}
   }catch(e){errors.push(src.project+': '+e.message)}
  }
- entries=entries.filter(x=>x.domain!=='CCFA').concat(dynamic);
+ const connectedDomains=new Set(dynamic.map(x=>x.domain));
+ connectedDomains.add('CCFA'); // Live Humanaut takes precedence over CCFA sample entries.
+ entries=entries.filter(x=>!connectedDomains.has(x.domain)).concat(dynamic);
  // Remove CCFA illustrative records; the first registered project owns CCFA live view.
  if(successful.length){
   const time=new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'}).format(new Date());
