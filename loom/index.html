@@ -76,14 +76,16 @@ const BOOTSTRAP_HUMANAUT={domain:'CCFA',project:'Humanaut',adapter:'humanaut_sit
  source:'https://docs.google.com/spreadsheets/d/1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ/edit'};
 const BOOTSTRAP_CCFA={domain:'CCFA',project:'Designer & Architect Outreach',adapter:'ccfa_actions',enabled:true,csv:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSLnt2pTydHDBB7j7Rz03urPqMvikrsyqE7PNQv49ExxT2THtuk-eDcbIeHAFfwiBurir0dRCvVe42E/pub?gid=1788134767&single=true&output=csv',source:'https://docs.google.com/spreadsheets/d/1d7b115EtSw0Rh5C1FpwnSA1qa8ipTJlzhuvd8ov4Kp8/edit'};
 const BOOTSTRAP_PERSONAL={domain:'Personal',project:'Personal',adapter:'personal_actions',enabled:true,csv:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQEuqbZRocX5hMF4_TY0ICnxRdHt27i654pHkAbSx0Lisk3OYQsB6Po9Or0JQ6i6ngTxvwn5OtuKxdT/pub?gid=405836401&single=true&output=csv',source:'https://docs.google.com/spreadsheets/d/1ZL80iKDwNCRDo3SRdPeYg1JKbSlyfhpwUKjKWO51D1c/edit'};
-let sources=[BOOTSTRAP_HUMANAUT,BOOTSTRAP_CCFA,BOOTSTRAP_PERSONAL];
+const BOOTSTRAP_R2DX={domain:'R2DX',project:'College Recruiting',adapter:'r2dx_actions',enabled:true,csv:'https://docs.google.com/spreadsheets/d/e/2PACX-1vRYKsgmvBMrrD2rnOnn9o74UUVtn0ryYecQ0_XDD7EVhpwu6WdA9T0Ey7UdSr5ArPx6z2jTIfSObh7P/pub?gid=244058824&single=true&output=csv',source:'https://docs.google.com/spreadsheets/d/1lcGTcAS3Tb6lKkyCqJ8VBn3wu9wjHvZaGHPHdzD55a4/edit'};
+let sources=[BOOTSTRAP_HUMANAUT,BOOTSTRAP_CCFA,BOOTSTRAP_PERSONAL,BOOTSTRAP_R2DX];
 const acceptedCsvUrl=v=>{try{const u=new URL(v);return u.protocol==='https:'&&u.hostname==='docs.google.com'&&u.pathname.startsWith('/spreadsheets/d/')}catch{return false}};
 // Google Visualization JSONP is the fallback when a local file:// page is blocked from CSV fetch.
 // Read-only, public Sheets only. No server or credentials.
 const gvizSources={
  '2PACX-1vS0zav3z-Rse6H0VlMJ_WvDQE_v1Sf4Hqrn1r2yZlZNWvopnV9Jp2izGCSgJb62ZL145T8c6lPDIo0q':'1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ',
  '2PACX-1vSLnt2pTydHDBB7j7Rz03urPqMvikrsyqE7PNQv49ExxT2THtuk-eDcbIeHAFfwiBurir0dRCvVe42E':'1d7b115EtSw0Rh5C1FpwnSA1qa8ipTJlzhuvd8ov4Kp8',
- '2PACX-1vQEuqbZRocX5hMF4_TY0ICnxRdHt27i654pHkAbSx0Lisk3OYQsB6Po9Or0JQ6i6ngTxvwn5OtuKxdT':'1ZL80iKDwNCRDo3SRdPeYg1JKbSlyfhpwUKjKWO51D1c'
+ '2PACX-1vQEuqbZRocX5hMF4_TY0ICnxRdHt27i654pHkAbSx0Lisk3OYQsB6Po9Or0JQ6i6ngTxvwn5OtuKxdT':'1ZL80iKDwNCRDo3SRdPeYg1JKbSlyfhpwUKjKWO51D1c',
+ '2PACX-1vRYKsgmvBMrrD2rnOnn9o74UUVtn0ryYecQ0_XDD7EVhpwu6WdA9T0Ey7UdSr5ArPx6z2jTIfSObh7P':'1lcGTcAS3Tb6lKkyCqJ8VBn3wu9wjHvZaGHPHdzD55a4'
 };
 function gvizCSV(url){
  return new Promise((resolve,reject)=>{
@@ -251,8 +253,8 @@ async function loadRegistry(){
  if(registryUrl){
   try{const csv=await retrieveCSV(registryUrl);sources=registryRows(csv);registryReady=true;
    if(!sources.length)throw Error('No enabled valid endpoints');
-  }catch(e){sources=[BOOTSTRAP_HUMANAUT,BOOTSTRAP_CCFA,BOOTSTRAP_PERSONAL];showRegistryNotice('Unable to read the registry ('+e.message+'). Using the published Humanaut endpoint temporarily.');}
- }else{sources=[BOOTSTRAP_HUMANAUT,BOOTSTRAP_CCFA,BOOTSTRAP_PERSONAL];}
+  }catch(e){sources=[BOOTSTRAP_HUMANAUT,BOOTSTRAP_CCFA,BOOTSTRAP_PERSONAL,BOOTSTRAP_R2DX];showRegistryNotice('Unable to read the registry ('+e.message+'). Using the published Humanaut endpoint temporarily.');}
+ }else{sources=[BOOTSTRAP_HUMANAUT,BOOTSTRAP_CCFA,BOOTSTRAP_PERSONAL,BOOTSTRAP_R2DX];}
  let errors=[],successful=[];
  const dynamic=[];
  for(const src of sources){
