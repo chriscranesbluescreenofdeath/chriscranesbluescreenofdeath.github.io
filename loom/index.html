@@ -74,12 +74,14 @@ const REGISTRY_CSV_DEFAULT=''; // Paste published Sources link once in Registry 
 const BOOTSTRAP_HUMANAUT={domain:'CCFA',project:'Humanaut',adapter:'humanaut_sites',enabled:true,pipelineStages:'Site Identified;Not Started',completeStages:'Payment Received;Completed Site',alwaysShowProgram:true,actionColumn:'Next Steps / Notes',
  csv:'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0zav3z-Rse6H0VlMJ_WvDQE_v1Sf4Hqrn1r2yZlZNWvopnV9Jp2izGCSgJb62ZL145T8c6lPDIo0q/pub?gid=1653690923&single=true&output=csv',
  source:'https://docs.google.com/spreadsheets/d/1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ/edit'};
-let sources=[BOOTSTRAP_HUMANAUT];
+const BOOTSTRAP_CCFA={domain:'CCFA',project:'Designer & Architect Outreach',adapter:'ccfa_actions',enabled:true,csv:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSLnt2pTydHDBB7j7Rz03urPqMvikrsyqE7PNQv49ExxT2THtuk-eDcbIeHAFfwiBurir0dRCvVe42E/pub?gid=1788134767&single=true&output=csv',source:'https://docs.google.com/spreadsheets/d/1d7b115EtSw0Rh5C1FpwnSA1qa8ipTJlzhuvd8ov4Kp8/edit'};
+let sources=[BOOTSTRAP_HUMANAUT,BOOTSTRAP_CCFA];
 const acceptedCsvUrl=v=>{try{const u=new URL(v);return u.protocol==='https:'&&u.hostname==='docs.google.com'&&u.pathname.startsWith('/spreadsheets/d/')}catch{return false}};
 // Google Visualization JSONP is the fallback when a local file:// page is blocked from CSV fetch.
 // Read-only, public Sheets only. No server or credentials.
 const gvizSources={
- '2PACX-1vS0zav3z-Rse6H0VlMJ_WvDQE_v1Sf4Hqrn1r2yZlZNWvopnV9Jp2izGCSgJb62ZL145T8c6lPDIo0q':'1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ'
+ '2PACX-1vS0zav3z-Rse6H0VlMJ_WvDQE_v1Sf4Hqrn1r2yZlZNWvopnV9Jp2izGCSgJb62ZL145T8c6lPDIo0q':'1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ',
+ '2PACX-1vSLnt2pTydHDBB7j7Rz03urPqMvikrsyqE7PNQv49ExxT2THtuk-eDcbIeHAFfwiBurir0dRCvVe42E':'1d7b115EtSw0Rh5C1FpwnSA1qa8ipTJlzhuvd8ov4Kp8'
 };
 function gvizCSV(url){
  return new Promise((resolve,reject)=>{
@@ -232,8 +234,8 @@ async function loadRegistry(){
  if(registryUrl){
   try{const csv=await retrieveCSV(registryUrl);sources=registryRows(csv);registryReady=true;
    if(!sources.length)throw Error('No enabled valid endpoints');
-  }catch(e){sources=[BOOTSTRAP_HUMANAUT];showRegistryNotice('Unable to read the registry ('+e.message+'). Using the published Humanaut endpoint temporarily.');}
- }else{sources=[BOOTSTRAP_HUMANAUT];}
+  }catch(e){sources=[BOOTSTRAP_HUMANAUT,BOOTSTRAP_CCFA];showRegistryNotice('Unable to read the registry ('+e.message+'). Using the published Humanaut endpoint temporarily.');}
+ }else{sources=[BOOTSTRAP_HUMANAUT,BOOTSTRAP_CCFA];}
  let errors=[],successful=[];
  const dynamic=[];
  for(const src of sources){
