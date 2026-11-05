@@ -27,7 +27,7 @@ function toEvent(e){
  return {title:e.summary||'Untitled',start:start.getTime(),end:end.getTime(),allDay:allDay,url:e.htmlLink||'',location:e.location||'',when:formatDate(start)+(allDay?' · All day':' · '+formatTime(start)),endTime:allDay?'':formatTime(end)};
 }
 function renderEvents(items){
- var list=items.filter(function(e){return e.status!=='cancelled'&&!e.recurringEventId&&!/school drop.off|morning prep/i.test(e.summary||'')}).map(toEvent).filter(function(e){return Number.isFinite(e.start)}).sort(function(a,b){return a.start-b.start});
+ var list=items.filter(function(e){return e.status!=='cancelled'&&!/school drop.off|morning prep/i.test(e.summary||'')}).map(toEvent).filter(function(e){return Number.isFinite(e.start)}).sort(function(a,b){return a.start-b.start});
  var overlaps=new Set();
  list.forEach(function(a,i){list.forEach(function(b,j){if(j>i&&!a.allDay&&!b.allDay&&a.start<b.end&&b.start<a.end){overlaps.add(i);overlaps.add(j)}})});
  el('calendarEvents').innerHTML=list.length?list.map(function(e,i){
