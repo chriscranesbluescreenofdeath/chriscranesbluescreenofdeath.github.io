@@ -215,6 +215,21 @@ function toCcfaActions(csv,src){
   return {domain:src.domain||'CCFA',project:get(r,'Project / Initiative')||'CCFA Sales & Marketing',action:next||deliverable||'No next step recorded',status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Next Action Due')||get(r,'Target Date')||'—',notes:[deliverable,get(r,'Dependencies / Context'),get(r,'Cadence')?'Cadence: '+get(r,'Cadence'):null].filter(Boolean).join(' · '),source:get(r,'Source Link')||src.source};
  });
 }
+
+function toR2dxActions(csv,src){
+ const {rows,get}=readActionTable(csv,'Task ID');
+ const tasks=rows.filter(r=>/^R2DX-/i.test(get(r,'Task ID')));
+ if(!tasks.length)throw Error('No R2DX records found; publish the Loom Feed tab');
+ return tasks.map(r=>{
+  const stage=get(r,'Status'),s=stage.toLowerCase();
+  const projectState=['done','complete'].includes(s)?'Complete':['fyi','n/a','cancelled'].includes(s)?'Pipeline':'Active';
+  const actionStatus=s==='in progress'?'In Progress':'Action Required';
+  const status=projectState==='Active'?actionStatus:projectState;
+  const action=get(r,'Next Step')||get(r,'Action')||'No next action recorded';
+  return {domain:'R2DX',project:get(r,'Project')||'Recruiting',action,status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due Date')||'—',notes:get(r,'Action')||'',source:src.source};
+ });
+}
+
 function toPersonalActions(csv,src){
  const {rows,get}=readActionTable(csv,'Task ID');
  const tasks=rows.filter(r=>/^PER-\d+/i.test(get(r,'Task ID')));
@@ -246,6 +261,9 @@ async function loadRegistry(){
    if(src.adapter==='humanaut_sites'){
     const actions=toHumanautActions(csv,src);
     if(!actions.length)throw Error('No matching site rows');
+    dynamic.push(...actions.map(a=>({...a,domain:src.domain})));successful.push(src.project);
+   }else if(src.adapter==='r2dx_actions'){
+    const actions=toR2dxActions(csv,src);
     dynamic.push(...actions.map(a=>({...a,domain:src.domain})));successful.push(src.project);
    }else if(src.adapter==='ccfa_actions'||src.adapter==='personal_actions'){
     const actions=src.adapter==='ccfa_actions'?toCcfaActions(csv,src):toPersonalActions(csv,src);
