@@ -22,3 +22,11 @@
 - Do not expose private calendar credentials or OAuth tokens in client-side HTML or published CSV. A private Calendar integration needs an authenticated backend or a deliberate published/sanitized calendar feed.
 
 This file is the durable project pointer for future sessions. Read it before changing The Loom.
+## Calendar integration (implemented November 4, 2026)
+
+- `loom/calendar.js` adds an **Upcoming this week** section before the footer in `loom/index.html`.
+- It reads the signed-in user's accessible Google Calendars in the browser with Google Identity Services (`calendar.readonly`) and Google Calendar API. It displays a rolling 7-day agenda, links to original events, excludes routine daily school-drop-off activities, and flags overlapping timed events.
+- **One-time setup required**: create a Google Cloud OAuth 2.0 **Web application** client, enable Google Calendar API, configure OAuth consent/test user, and authorize JavaScript origin `https://chriscranesbluescreenofdeath.github.io`. In the dashboard click **Settings**, enter the client ID, save, then click **Connect Google Calendar**. Authorization is per browser/session and may need refreshing.
+- Calendar access granted to ChatGPT does **not** authorize a separately hosted static GitHub Pages site.
+- The OAuth client ID is saved in the local browser only. Access tokens are kept in memory and event data is never committed to GitHub or written to published Sheets. Do not put OAuth client secrets or private ICS feed URLs in this repository.
+- This integration is deployed in source but cannot display live events until OAuth has been configured and authorized by the owner. Test Google Cloud OAuth consent settings before announcing end-to-end completion.
