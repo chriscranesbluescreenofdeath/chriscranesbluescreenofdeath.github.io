@@ -59,9 +59,9 @@ const fmt=new Intl.DateTimeFormat('en-US',{weekday:'short',month:'short',day:'nu
 for(const id of ['projectFilter','statusFilter','search'])$('#'+id).addEventListener(id==='search'?'input':'change',render);
 // Prefer an explicitly marked next action over historical context in long notes.
 function actionPreview(value){
- const text=String(value||'').replace(/\\s+/g,' ').trim();
- const marked=text.match(/ACTION REQUIRED\\s*[—–:-]\\s*(.+)/i);
- return (marked?marked[1]:text).split(/\\s+(?:Owner:|Added )/)[0];
+ const text=String(value||'').replace(/\s+/g,' ').trim();
+ const marked=text.match(/ACTION REQUIRED\s*[—–:-]\s*(.+)/i);
+ return (marked?marked[1]:text).split(/\s+(?:Owner:|Added )/)[0];
 }
 function visibleDomain(){return current==='Overview'?entries:entries.filter(x=>x.domain===current)}
 function render(){
