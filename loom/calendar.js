@@ -3,6 +3,9 @@
 'use strict';
 var root=document.querySelector('main.main'), footer=root&&root.querySelector('footer.foot');
 if(!footer)return;
+// Public OAuth identifier; private calendar access still requires Google authorization.
+var DEFAULT_CLIENT_ID='69799489064-dvsqmrf93ao4lh2fob5dsfv710vc73mp.apps.googleusercontent.com';
+function clientId(){return localStorage.getItem(KEY)||DEFAULT_CLIENT_ID}
 var KEY='loom_calendar_oauth_client_id',TZ='America/Chicago',token='',oauth;
 var section=document.createElement('section');
 section.id='loom-calendar';
@@ -10,7 +13,7 @@ section.innerHTML='<div class="section-head"><h2>Upcoming this week</h2><span>Ro
 '<div class="loom-calendar-toolbar"><span id="calendarMessage" role="status">Connect Google Calendar to view events privately.</span>'+
 '<div class="loom-calendar-actions"><button id="calendarConnect" type="button">Connect Google Calendar</button> <button id="calendarRefresh" type="button" hidden>Refresh</button> <button id="calendarSettings" type="button">Settings</button> <a target="_blank" rel="noopener" href="https://calendar.google.com/calendar/u/0/r/week">Open Calendar ↗</a></div></div>'+
 '<div id="calendarEvents" class="simple-list"><div class="empty">Calendar not connected.</div></div>'+
-'<div id="calendarSetup" class="loom-calendar-setup hidden"><strong>One-time private calendar connection</strong><p>Use a Google Cloud OAuth 2.0 Web application client ID. Enable the Google Calendar API and add <code>https://chriscranesbluescreenofdeath.github.io</code> as an authorized JavaScript origin. The client ID is kept only in this browser; private events and access tokens are never saved to GitHub.</p><label for="calendarClientId">OAuth Client ID</label><input id="calendarClientId" type="text" placeholder="xxxx.apps.googleusercontent.com"> <button id="calendarSave" type="button">Save setting</button> <button id="calendarDisconnect" type="button">Disconnect</button></div>';
+'<div id="calendarSetup" class="loom-calendar-setup hidden"><strong>Calendar connection settings</strong><p>The Loom includes its default Google Calendar connection on every device. You can optionally override the client ID in this browser. Private events and access tokens are never saved to GitHub.</p><label for="calendarClientId">OAuth Client ID</label><input id="calendarClientId" type="text" placeholder="xxxx.apps.googleusercontent.com"> <button id="calendarSave" type="button">Save setting</button> <button id="calendarDisconnect" type="button">Disconnect</button></div>';
 footer.before(section);
 var css=document.createElement('style');
 css.textContent='#loom-calendar{margin-top:44px}.loom-calendar-toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:15px;color:#757771;font-size:12px;margin-bottom:14px}.loom-calendar-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.loom-calendar-actions button,.loom-calendar-setup button{font:inherit;border:1px solid #d8d7d2;border-radius:6px;background:white;padding:9px 12px;color:#252725;font-weight:600}.loom-calendar-actions a,.loom-event a{color:#395366;text-underline-offset:3px}.loom-calendar-setup{margin-top:13px;background:#fff;border:1px solid #e5e3de;padding:18px;border-radius:8px;font-size:13px;line-height:1.7}.loom-calendar-setup p{max-width:850px}.loom-calendar-setup label{display:block;font-weight:650}.loom-calendar-setup input{width:min(480px,100%);padding:10px;border:1px solid #d8d7d2;border-radius:5px}.loom-event{display:flex;justify-content:space-between;gap:18px;align-items:baseline;padding:16px 4px;border-bottom:1px solid #eeece8;font-size:13px}.loom-event:last-child{border:0}.loom-event strong{font-weight:650}.loom-event time,.loom-event small{color:#777a75;font-size:12px}.loom-event small{display:block;margin-top:5px}.loom-conflict{color:#94501d;font-weight:750;margin-left:9px;font-size:11px}@media(max-width:600px){.loom-event{flex-direction:column;gap:5px}}';
@@ -68,7 +71,7 @@ async function refresh(){
  }catch(err){message('Calendar error: '+err.message)}
 }
 async function connect(){
- var id=localStorage.getItem(KEY);
+ var id=clientId();
  if(!id){el('calendarSetup').classList.remove('hidden');message('One-time Google OAuth setup required.');return}
  try{
   await loadGoogle();
@@ -78,8 +81,8 @@ async function connect(){
 }
 el('calendarConnect').addEventListener('click',connect);
 el('calendarRefresh').addEventListener('click',refresh);
-el('calendarSettings').addEventListener('click',function(){el('calendarClientId').value=localStorage.getItem(KEY)||'';el('calendarSetup').classList.toggle('hidden')});
+el('calendarSettings').addEventListener('click',function(){el('calendarClientId').value=clientId();el('calendarSetup').classList.toggle('hidden')});
 el('calendarSave').addEventListener('click',function(){var s=el('calendarClientId').value.trim();if(!/^[\w-]+\.apps\.googleusercontent\.com$/.test(s)){message('Enter a valid Google OAuth web client ID.');return}localStorage.setItem(KEY,s);el('calendarSetup').classList.add('hidden');message('Setting saved. Click Connect Google Calendar.')});
 el('calendarDisconnect').addEventListener('click',function(){if(token&&window.google&&google.accounts)google.accounts.oauth2.revoke(token,function(){});token='';localStorage.removeItem(KEY);el('calendarSetup').classList.add('hidden');el('calendarRefresh').hidden=true;el('calendarEvents').innerHTML='<div class="empty">Calendar not connected.</div>';message('Disconnected; no event data is stored.')});
-if(localStorage.getItem(KEY))message('Google Calendar configured. Click Connect Google Calendar to load events.');
+if(clientId())message('Google Calendar configured. Click Connect Google Calendar to load events.');
 })();
