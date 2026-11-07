@@ -76,7 +76,8 @@ async function connect(){
  try{
   await loadGoogle();
   oauth=google.accounts.oauth2.initTokenClient({client_id:id,scope:'https://www.googleapis.com/auth/calendar.readonly',callback:function(r){if(r.error){message('Authorization failed: '+r.error);return}token=r.access_token;refresh()}});
-  oauth.requestAccessToken({prompt:'consent'});
+  // Reuse Google's existing grant; do not force the consent screen on every connection.
+  oauth.requestAccessToken({prompt:''});
  }catch(err){message(err.message)}
 }
 el('calendarConnect').addEventListener('click',connect);
