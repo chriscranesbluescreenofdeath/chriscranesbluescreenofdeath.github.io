@@ -27,6 +27,22 @@
 .action-preview{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .extra{overflow-wrap:anywhere}
 .extra p{margin:0 0 10px}
+
+.action-notes{white-space:pre-wrap;overflow-wrap:anywhere;color:#454842}
+.action-notes a{color:#395366;text-underline-offset:3px}
+.private-notes button,.private-disconnect{min-height:44px;padding:8px 12px;border:1px solid #d8d7d2;border-radius:6px;background:#fff;color:#252725}
+.private-notes{margin:12px 0}.private-notes p{margin-bottom:8px}
+.row-open{min-height:44px;min-width:44px}
+@media(max-width:700px){
+ .intro{flex-wrap:wrap}.data-table{min-width:0;table-layout:auto}
+ .data-table thead{display:none}.data-table tbody,.data-table tr,.data-table td{display:block;width:100%}
+ .data-table tr:not(.details-row){display:grid;grid-template-columns:1fr 1fr;gap:0;padding:12px 16px;border-bottom:1px solid #eae9e5}
+ .data-table td,.data-table td:first-child,.data-table td:last-child{padding:5px 0;border:0}
+ .data-table td:nth-child(1),.data-table td:nth-child(2){grid-column:1/-1}
+ .data-table td:nth-child(6){text-align:right}.data-table td:nth-child(4)::before{content:'Priority: '}
+ .data-table td:nth-child(5)::before{content:'Due: '}.project,.action-preview{white-space:normal}
+ .extra{padding:16px;max-width:100%}.details-row:has(.extra:not(.show)){display:none}
+}
 </style>
 </head>
 <body>
@@ -63,6 +79,72 @@ function actionPreview(value){
  const marked=text.match(/ACTION REQUIRED\s*[—–:-]\s*(.+)/i);
  return (marked?marked[1]:text).split(/\s+(?:Owner:|Added )/)[0];
 }
+// Private notes are fetched directly from Google, never from a published feed.
+const privateR2dxNotes=(()=>{
+ let token='',expires=0,timer,oauth,authorizing;
+ const cache=new Map(),pending=new Map();
+ const sheet='1lcGTcAS3Tb6lKkyCqJ8VBn3wu9wjHvZaGHPHdzD55a4';
+ function clear(){token='';expires=0;cache.clear();pending.clear();clearTimeout(timer);document.querySelectorAll('.private-notes').forEach(el=>{el.replaceChildren();const p=document.createElement('p');p.textContent='Private notes disconnected. Reopen Details to reconnect.';el.append(p)});document.querySelector('#privateNotesDisconnect')?.remove()}
+ function authorize(){
+  if(token&&Date.now()<expires)return Promise.resolve(token);
+  if(authorizing)return authorizing;
+  authorizing=new Promise(async(resolve,reject)=>{
+   try{
+    if(!window.google?.accounts?.oauth2)await new Promise((yes,no)=>{const script=document.createElement('script');script.src='https://accounts.google.com/gsi/client';script.onload=yes;script.onerror=()=>no(Error('Google sign-in could not load.'));document.head.appendChild(script)});
+    oauth=google.accounts.oauth2.initTokenClient({client_id:localStorage.getItem('loom_calendar_oauth_client_id')||'69799489064-dvsqmrf93ao4lh2fob5dsfv710vc73mp.apps.googleusercontent.com',scope:'https://www.googleapis.com/auth/spreadsheets.readonly',include_granted_scopes:false,error_callback:()=>reject(Error('Google sign-in was closed. Try again.')),callback:r=>{
+     if(r.error||!r.access_token){reject(Error('Google did not authorize private notes.'));return}
+     token=r.access_token;expires=Date.now()+Math.max(0,Number(r.expires_in||3600)-30)*1000;clearTimeout(timer);timer=setTimeout(clear,Math.max(0,expires-Date.now()));
+     if(!document.querySelector('#privateNotesDisconnect')){const b=document.createElement('button');b.id='privateNotesDisconnect';b.className='private-disconnect';b.textContent='Disconnect private notes';b.onclick=()=>{const old=token;clear();if(old)google.accounts.oauth2.revoke(old,()=>{})};document.querySelector('#sync').append(b)}
+     resolve(token);
+    }});
+    oauth.requestAccessToken({prompt:''});
+   }catch(e){reject(e)}
+  }).finally(()=>{authorizing=null});return authorizing;
+ }
+ function cached(task){return token&&Date.now()<expires?cache.get(task.id+'|'+task.action):undefined}
+ async function read(task){
+  const hit=cached(task);if(hit!==undefined)return hit;
+  const match=/^R2DX-(\d{4})$/.exec(task.id||'');const row=match?Number(match[1]):0;
+  if(row<5||row>998)throw Error('This action has no valid tracker row. Open the source tracker.');
+  if(!token||Date.now()>=expires)throw Error('Connect Google to load private notes.');
+  const key=task.id+'|'+task.action;if(pending.has(key))return pending.get(key);
+  const sessionToken=token;
+  const request=(async()=>{
+   const range="'Action Items'!B"+row+':F'+row;
+   const res=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+sheet+'/values/'+encodeURIComponent(range),{headers:{Authorization:'Bearer '+sessionToken},cache:'no-store'});
+   if(res.status===401){clear();throw Error('Google sign-in expired. Reopen Details and reconnect.')}
+   if(!res.ok)throw Error(res.status===403?'Google could not read this tracker. Use an account with access and ensure the Google Sheets API is enabled for The Loom.':'Private notes could not load. Try again or open the source tracker.');
+   const data=await res.json(),values=data.values?.[0]||[];
+   if(String(values[0]||'').trim()!==task.action.trim())throw Error('The tracker row changed. Refresh The Loom before loading these notes.');
+   if(token!==sessionToken||Date.now()>=expires)throw Error('Private notes disconnected. Reconnect to load them.');
+   const text=String(values[4]||'');cache.set(key,text);return text;
+  })().finally(()=>pending.delete(key));pending.set(key,request);return request;
+ }
+ return {authorize,read,cached,connected:()=>!!token&&Date.now()<expires};
+})();
+function formatActionNotes(text){
+ // Escape every text segment, and allow only explicit HTTP(S) URLs as links.
+ return String(text||'').split(/(https?:\/\/[^\s<>"']+)/g).map((part,i)=>i%2?`<a href="${escape(part)}" target="_blank" rel="noopener noreferrer">${escape(part)}</a>`:escape(part)).join('');
+}
+function privateNotesPanel(task){
+ const value=privateR2dxNotes.cached(task);
+ return `<section class="private-notes" aria-label="Private tracker notes"><div role="status">${value===undefined?'Full instructions are stored privately in the source tracker.':`<div class="action-notes">${formatActionNotes(value||'No notes recorded in the tracker.')}</div>`}</div></section>`;
+}
+async function loadPrivateNotes(task,panel){
+ const section=panel.querySelector('.private-notes'),status=section?.querySelector('[role="status"]');if(!status)return;
+ async function load(){
+  status.textContent='Loading private tracker notes…';
+  try{const value=await privateR2dxNotes.read(task);status.innerHTML=`<div class="action-notes">${formatActionNotes(value||'No notes recorded in the tracker.')}</div>`;section.querySelector('button')?.remove()}
+  catch(e){status.textContent=e.message;addButton()}
+ }
+ function addButton(){
+  if(section.querySelector('button'))return;
+  const b=document.createElement('button');b.type='button';b.textContent=privateR2dxNotes.connected()?'Retry private notes':'Connect Google for full instructions';
+  b.onclick=async()=>{b.disabled=true;try{await privateR2dxNotes.authorize();await load()}catch(e){status.textContent=e.message}finally{b.disabled=false}};section.append(b);
+ }
+ if(privateR2dxNotes.connected())await load();else addButton();
+}
+
 function visibleDomain(){return current==='Overview'?entries:entries.filter(x=>x.domain===current)}
 function render(){
 [...nav.children].forEach(b=>{const on=b.textContent===current;b.classList.toggle('active',on);b.setAttribute('aria-current',on?'page':'false')});
@@ -86,8 +168,8 @@ let data=visibleDomain().filter(x=>(project==='All'||x.project===project||x.id==
 const counts=[data.length,data.filter(x=>stateOf(x)==='Active').length,data.filter(required).length,data.filter(x=>stateOf(x)==='Complete').length];
 $('#kpis').innerHTML=['Showing','Active sites','Action required','Complete'].map((k,i)=>`<div class="kpi"><div class="kpi-val">${counts[i]}</div><div class="kpi-label">${k}</div></div>`).join('');
 $('#count').textContent=data.length+' records';$('#empty').classList.toggle('hidden',data.length>0);
-$('#rows').innerHTML=data.map((x,i)=>`<tr><td><div class="project-cell" data-domain="${escape(x.domain)}"><span class="project" title="${escape(x.project)}">${escape(x.project)}</span>${current==='Overview'?`<div class="light domain-label">${escape(x.domain)}</div>`:''}</div></td><td class="action"><span class="action-preview" title="${escape(x.action)}">${escape(actionPreview(x.action))}</span></td><td><span class="pill ${x.status.replace(/\s+/g,'')}">${escape(x.status)}</span></td><td class="light">${escape(x.priority)}</td><td class="light" style="white-space:nowrap">${escape(x.due)}</td><td><button class="row-open" data-i="${i}" aria-expanded="false">Details</button></td></tr><tr class="details-row"><td colspan="6" style="padding:0;border:0"><div class="extra" id="detail-${i}"><p><strong>Next action:</strong> ${escape(x.action)}</p>${escape(x.notes)}${x.stage?`<div style="margin-top:7px"><strong>Tracker stage:</strong> ${escape(x.stage)}</div>`:''}${x.source?`<a href="${escape(x.source)}" target="_blank" rel="noopener" style="color:#384b57;display:inline-block;margin-top:8px">Open source tracker ↗</a>`:''}</div></td></tr>`).join('');
-$('#rows').querySelectorAll('.row-open').forEach(b=>b.addEventListener('click',()=>{const d=$('#detail-'+b.dataset.i);d.classList.toggle('show');b.setAttribute('aria-expanded',d.classList.contains('show'));b.textContent=d.classList.contains('show')?'Close':'Details'}));
+$('#rows').innerHTML=data.map((x,i)=>`<tr><td><div class="project-cell" data-domain="${escape(x.domain)}"><span class="project" title="${escape(x.project)}">${escape(x.project)}</span>${current==='Overview'?`<div class="light domain-label">${escape(x.domain)}</div>`:''}</div></td><td class="action"><span class="action-preview" title="${escape(x.action)}">${escape(actionPreview(x.action))}</span></td><td><span class="pill ${x.status.replace(/\s+/g,'')}">${escape(x.status)}</span></td><td class="light">${escape(x.priority)}</td><td class="light" style="white-space:nowrap">${escape(x.due)}</td><td><button class="row-open" data-i="${i}" aria-controls="detail-${i}" aria-expanded="false">Details</button></td></tr><tr class="details-row"><td colspan="6" style="padding:0;border:0"><div class="extra" id="detail-${i}"><p><strong>Next action:</strong> ${escape(x.action)}</p>${x.notes?`<div class="action-notes">${formatActionNotes(x.notes)}</div>`:''}${x.domain==='R2DX'?privateNotesPanel(x):''}${x.stage?`<div style="margin-top:7px"><strong>Tracker stage:</strong> ${escape(x.stage)}</div>`:''}${x.source?`<a href="${escape(x.source)}" target="_blank" rel="noopener" style="color:#384b57;display:inline-block;margin-top:8px">Open source tracker ↗</a>`:''}</div></td></tr>`).join('');
+$('#rows').querySelectorAll('.row-open').forEach(b=>b.addEventListener('click',()=>{const d=$('#detail-'+b.dataset.i);d.classList.toggle('show');b.setAttribute('aria-expanded',d.classList.contains('show'));b.textContent=d.classList.contains('show')?'Close':'Details';if(d.classList.contains('show')&&data[b.dataset.i].domain==='R2DX')loadPrivateNotes(data[b.dataset.i],d)}));
 $('#resources').innerHTML=(resourceMap[current]||[]).map(n=>`<div class="simple-line"><div><strong>${n==='Humanaut tracker'?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="https://docs.google.com/spreadsheets/d/1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ/edit" target="_blank" rel="noopener">Humanaut tracker ↗</a>':loomResourceUrls[n]?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="'+escape(loomResourceUrls[n])+'" target="_blank" rel="noopener">'+escape(n)+' ↗</a>':escape(n)}</strong><small>${n==='Humanaut tracker'?'Live tracker source':n==='IFS guide and worksheets'?'Practical IFS introduction · resources and worksheet downloads':'Reference · integration pending'}</small></div></div>`).join('');
 $('#briefsSection').classList.toggle('hidden',current!=='CCFA');
 $('#briefs').innerHTML=current==='CCFA'?briefLinks.map(([title,url])=>`<div class="simple-line"><div><strong><a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="${escape(url)}" target="_blank" rel="noopener">${escape(title)} ↗</a></strong></div></div>`).join(''):'';
@@ -254,8 +336,8 @@ function toR2dxActions(csv,src){
   const projectState=['done','complete'].includes(s)?'Complete':['fyi','n/a','cancelled'].includes(s)?'Pipeline':'Active';
   const actionStatus=s==='in progress'?'In Progress':'Action Required';
   const status=projectState==='Active'?actionStatus:projectState;
-  const action=get(r,'Next Step')||get(r,'Action')||'No next action recorded';
-  return {domain:'R2DX',project:get(r,'Project')||'Recruiting',action,status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due Date')||'—',notes:get(r,'Action')||'',source:src.source};
+  const action=get(r,'Action')||get(r,'Next Step')||'No next action recorded';
+  return {domain:'R2DX',project:get(r,'Project')||'Recruiting',action,status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due Date')||'—',notes:get(r,'Notes')||get(r,'Details')||get(r,'Instructions')||'',source:src.source};
  });
 }
 
