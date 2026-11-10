@@ -25,6 +25,7 @@
 .data-table th:nth-child(6){width:85px}
 .data-table th,.data-table td{padding-top:13px;padding-bottom:13px}
 .action-preview{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.task-source{display:inline-block;margin-top:4px;color:#395366;text-decoration:underline;text-underline-offset:3px}
 .extra{overflow-wrap:anywhere}
 .extra p{margin:0 0 10px}
 
@@ -163,6 +164,10 @@ function syncActionGroup(button){
   row=row.nextElementSibling;
  }
 }
+function taskSourceLink(url){
+ if(!url)return '';
+ return `<a class="task-source" href="${escape(url)}" target="_blank" rel="noopener noreferrer">Open task source ↗</a>`;
+}
 function visibleDomain(){return current==='Overview'?entries:entries.filter(x=>x.domain===current)}
 function render(){
 [...nav.children].forEach(b=>{const on=b.textContent===current;b.classList.toggle('active',on);b.setAttribute('aria-current',on?'page':'false')});
@@ -198,7 +203,7 @@ const metrics=groupRequired
 $('#kpis').innerHTML=metrics.map(([label,count])=>`<div class="kpi"><div class="kpi-val">${count}</div><div class="kpi-label">${label}</div></div>`).join('');
 $('#count').textContent=data.length+' records';$('#empty').classList.toggle('hidden',data.length>0);
 const groupHeading=(key,label)=>`<tr class="action-group"><th colspan="6"><button type="button" class="action-group-toggle" data-action-group="${key}" aria-expanded="${!collapsedActionGroups.has(key)}">${label}</button></th></tr>`;
-const renderedRows=data.map((x,i)=>`<tr><td><div class="project-cell" data-domain="${escape(x.domain)}"><span class="project" title="${escape(x.project)}">${escape(x.project)}</span>${current==='Overview'?`<div class="light domain-label">${escape(x.domain)}</div>`:''}</div></td><td class="action"><span class="action-preview" title="${escape(x.action)}">${escape(actionPreview(x.action))}</span></td><td><span class="pill ${x.status.replace(/\s+/g,'')}">${escape(x.status)}</span></td><td class="light">${escape(x.priority)}</td><td class="light" style="white-space:nowrap">${escape(x.due)}</td><td><button class="row-open" data-i="${i}" aria-controls="detail-${i}" aria-expanded="false">Details</button></td></tr><tr class="details-row"><td colspan="6" style="padding:0;border:0"><div class="extra" id="detail-${i}"><p><strong>Next action:</strong> ${escape(x.action)}</p>${x.notes?`<div class="action-notes">${formatActionNotes(x.notes)}</div>`:''}${x.domain==='R2DX'?privateNotesPanel(x):''}${x.stage?`<div style="margin-top:7px"><strong>Tracker stage:</strong> ${escape(x.stage)}</div>`:''}${x.source?`<a href="${escape(x.source)}" target="_blank" rel="noopener" style="color:#384b57;display:inline-block;margin-top:8px">Open source tracker ↗</a>`:''}</div></td></tr>`);
+const renderedRows=data.map((x,i)=>`<tr><td><div class="project-cell" data-domain="${escape(x.domain)}"><span class="project" title="${escape(x.project)}">${escape(x.project)}</span>${current==='Overview'?`<div class="light domain-label">${escape(x.domain)}</div>`:''}</div></td><td class="action"><span class="action-preview" title="${escape(x.action)}">${escape(actionPreview(x.action))}</span>${taskSourceLink(x.taskSource)}</td><td><span class="pill ${x.status.replace(/\s+/g,'')}">${escape(x.status)}</span></td><td class="light">${escape(x.priority)}</td><td class="light" style="white-space:nowrap">${escape(x.due)}</td><td><button class="row-open" data-i="${i}" aria-controls="detail-${i}" aria-expanded="false">Details</button></td></tr><tr class="details-row"><td colspan="6" style="padding:0;border:0"><div class="extra" id="detail-${i}"><p><strong>Next action:</strong> ${escape(x.action)}</p>${x.notes?`<div class="action-notes">${formatActionNotes(x.notes)}</div>`:''}${x.domain==='R2DX'?privateNotesPanel(x):''}${x.stage?`<div style="margin-top:7px"><strong>Tracker stage:</strong> ${escape(x.stage)}</div>`:''}${x.source?`<a href="${escape(x.source)}" target="_blank" rel="noopener" style="color:#384b57;display:inline-block;margin-top:8px">Open source tracker ↗</a>`:''}</div></td></tr>`);
 $('#rows').innerHTML=groupRequired&&data.length
  ? groupHeading('today','Action required today')+(todayCount?renderedRows.slice(0,todayCount).join(''):'<tr><td colspan="6" class="light">No actions marked Today.</td></tr>')
    +(todayCount<data.length?groupHeading('other','Other action required')+renderedRows.slice(todayCount).join(''):'')
@@ -361,6 +366,14 @@ function readActionTable(csv,headerName){
  const get=(r,k)=>{const j=headers.indexOf(k.toLowerCase());return j<0?'':String(r[j]||'').trim()};
  return {rows:rows.slice(ix+1),get};
 }
+function readTaskSource(row,get){
+ for(const column of ['Source Link','Link']){
+  const value=get(row,column);
+  if(!/^https?:\/\//i.test(value))continue;
+  try{return new URL(value).href}catch{}
+ }
+ return '';
+}
 function toCcfaActions(csv,src){
  const {rows,get}=readActionTable(csv,'Task ID');
  const tasks=rows.filter(r=>/^CCFA-\d+/i.test(get(r,'Task ID')));
@@ -370,7 +383,7 @@ function toCcfaActions(csv,src){
   const projectState=st==='complete'?'Complete':(['not started','planning','pipeline','cancelled'].includes(st)?'Pipeline':'Active');
   const actionStatus=next?'Action Required':'In Progress';
   const status=projectState==='Active'?actionStatus:projectState;
-  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'CCFA',project:get(r,'Project / Initiative')||'CCFA Sales & Marketing',action:next||deliverable||'No next step recorded',status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Next Action Due')||get(r,'Target Date')||'—',notes:[deliverable,get(r,'Dependencies / Context'),get(r,'Cadence')?'Cadence: '+get(r,'Cadence'):null].filter(Boolean).join(' · '),source:get(r,'Source Link')||src.source};
+  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'CCFA',project:get(r,'Project / Initiative')||'CCFA Sales & Marketing',action:next||deliverable||'No next step recorded',status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Next Action Due')||get(r,'Target Date')||'—',notes:[deliverable,get(r,'Dependencies / Context'),get(r,'Cadence')?'Cadence: '+get(r,'Cadence'):null].filter(Boolean).join(' · '),taskSource:readTaskSource(r,get),source:src.source};
  });
 }
 
@@ -396,7 +409,7 @@ function toPersonalActions(csv,src){
   const stage=get(r,'Status')||get(r,'Status / Notes'),st=stage.toLowerCase();
   const projectState=['done','complete','completed','cancelled'].includes(st)?'Complete':'Active';
   const next=get(r,'Next action')||get(r,'Next Steps / Notes'),actionStatus=next?'Action Required':'In Progress';
-  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'Personal',project:get(r,'Project')||'Personal',action:next||get(r,'Action')||'No next step recorded',status:projectState==='Complete'?'Complete':actionStatus,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due date')||get(r,'Next review')||'—',notes:[get(r,'Action'),get(r,'Notes')].filter(Boolean).join(' · '),source:get(r,'Link')||src.source};
+  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'Personal',project:get(r,'Project')||'Personal',action:next||get(r,'Action')||'No next step recorded',status:projectState==='Complete'?'Complete':actionStatus,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due date')||get(r,'Next review')||'—',notes:[get(r,'Action'),get(r,'Notes')].filter(Boolean).join(' · '),taskSource:readTaskSource(r,get),source:src.source};
  });
 }
 
