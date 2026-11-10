@@ -43,6 +43,7 @@
  .data-table td:nth-child(5)::before{content:'Due: '}.project,.action-preview{white-space:normal}
  .extra{padding:16px;max-width:100%}.details-row:has(.extra:not(.show)){display:none}
 }
+@media(min-width:851px){.kpis.grouped{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .data-table .action-group th{background:var(--soft);color:var(--ink);font-size:13px;letter-spacing:0;text-transform:none}
 </style>
 </head>
@@ -155,7 +156,7 @@ $('#eyebrow').textContent=current==='Overview'?'All domains':current+' · Focus 
 const previous=$('#projectFilter').value||'All';const projs=[...new Set(visibleDomain().map(x=>x.project))].sort();$('#projectFilter').innerHTML='<option value="All">All projects</option>'+projs.map(p=>`<option value="${escape(p)}">${escape(p)}</option>`).join('');$('#projectFilter').value=projs.includes(previous)?previous:'All';
 const project=$('#projectFilter').value,status=$('#statusFilter').value,q=$('#search').value.trim().toLowerCase();
 const groupRequired=current==='Overview'&&status==='Active · Action Required';
-$('#kpis').classList.toggle('hidden',groupRequired);
+$('#kpis').classList.toggle('grouped',groupRequired);
 const stateOf=x=>x.projectState||(x.status==='Complete'?'Complete':'Active');
 const required=x=>x.actionStatus==='Action Required'||(!x.actionStatus&&['Open','Waiting','Blocked','Deferred'].includes(x.status));
 const matchStatus=x=>{
@@ -177,8 +178,10 @@ if(groupRequired){
  todayCount=today.length;
  data=today.concat(data.filter(x=>!isToday(x)));
 }
-const counts=[data.length,data.filter(x=>stateOf(x)==='Active').length,data.filter(required).length,data.filter(x=>stateOf(x)==='Complete').length];
-$('#kpis').innerHTML=['Showing','Active sites','Action required','Complete'].map((k,i)=>`<div class="kpi"><div class="kpi-val">${counts[i]}</div><div class="kpi-label">${k}</div></div>`).join('');
+const metrics=groupRequired
+ ? [['Action required today',todayCount],['Other action required',data.length-todayCount],['Total action required',data.length]]
+ : [['Showing',data.length],['Active sites',data.filter(x=>stateOf(x)==='Active').length],['Action required',data.filter(required).length],['Complete',data.filter(x=>stateOf(x)==='Complete').length]];
+$('#kpis').innerHTML=metrics.map(([label,count])=>`<div class="kpi"><div class="kpi-val">${count}</div><div class="kpi-label">${label}</div></div>`).join('');
 $('#count').textContent=data.length+' records';$('#empty').classList.toggle('hidden',data.length>0);
 const groupHeading=label=>`<tr class="action-group"><th colspan="6">${label}</th></tr>`;
 const renderedRows=data.map((x,i)=>`<tr><td><div class="project-cell" data-domain="${escape(x.domain)}"><span class="project" title="${escape(x.project)}">${escape(x.project)}</span>${current==='Overview'?`<div class="light domain-label">${escape(x.domain)}</div>`:''}</div></td><td class="action"><span class="action-preview" title="${escape(x.action)}">${escape(actionPreview(x.action))}</span></td><td><span class="pill ${x.status.replace(/\s+/g,'')}">${escape(x.status)}</span></td><td class="light">${escape(x.priority)}</td><td class="light" style="white-space:nowrap">${escape(x.due)}</td><td><button class="row-open" data-i="${i}" aria-controls="detail-${i}" aria-expanded="false">Details</button></td></tr><tr class="details-row"><td colspan="6" style="padding:0;border:0"><div class="extra" id="detail-${i}"><p><strong>Next action:</strong> ${escape(x.action)}</p>${x.notes?`<div class="action-notes">${formatActionNotes(x.notes)}</div>`:''}${x.domain==='R2DX'?privateNotesPanel(x):''}${x.stage?`<div style="margin-top:7px"><strong>Tracker stage:</strong> ${escape(x.stage)}</div>`:''}${x.source?`<a href="${escape(x.source)}" target="_blank" rel="noopener" style="color:#384b57;display:inline-block;margin-top:8px">Open source tracker ↗</a>`:''}</div></td></tr>`);
