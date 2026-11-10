@@ -44,7 +44,11 @@
  .extra{padding:16px;max-width:100%}.details-row:has(.extra:not(.show)){display:none}
 }
 @media(min-width:851px){.kpis.grouped{grid-template-columns:repeat(3,minmax(0,1fr))}}
-.data-table .action-group th{background:var(--soft);color:var(--ink);font-size:13px;letter-spacing:0;text-transform:none}
+.data-table .action-group th{grid-column:1/-1;background:var(--soft);color:var(--ink);padding:0;font-size:13px;letter-spacing:0;text-transform:none}
+.action-group-toggle{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.action-group-toggle::before{content:"";width:7px;height:7px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(-45deg)}
+.action-group-toggle[aria-expanded="true"]::before{transform:translateY(-2px) rotate(45deg)}
+.action-group-toggle:focus-visible{outline:2px solid var(--ink);outline-offset:-3px}
 </style>
 </head>
 <body>
@@ -149,6 +153,16 @@ async function loadPrivateNotes(task,panel){
  if(privateR2dxNotes.connected())await load();else addButton();
 }
 
+const collapsedActionGroups=new Set();
+function syncActionGroup(button){
+ const collapsed=collapsedActionGroups.has(button.dataset.actionGroup);
+ button.setAttribute('aria-expanded',String(!collapsed));
+ let row=button.closest('tr').nextElementSibling;
+ while(row&&!row.classList.contains('action-group')){
+  row.classList.toggle('hidden',collapsed);
+  row=row.nextElementSibling;
+ }
+}
 function visibleDomain(){return current==='Overview'?entries:entries.filter(x=>x.domain===current)}
 function render(){
 [...nav.children].forEach(b=>{const on=b.textContent===current;b.classList.toggle('active',on);b.setAttribute('aria-current',on?'page':'false')});
@@ -183,12 +197,21 @@ const metrics=groupRequired
  : [['Showing',data.length],['Active sites',data.filter(x=>stateOf(x)==='Active').length],['Action required',data.filter(required).length],['Complete',data.filter(x=>stateOf(x)==='Complete').length]];
 $('#kpis').innerHTML=metrics.map(([label,count])=>`<div class="kpi"><div class="kpi-val">${count}</div><div class="kpi-label">${label}</div></div>`).join('');
 $('#count').textContent=data.length+' records';$('#empty').classList.toggle('hidden',data.length>0);
-const groupHeading=label=>`<tr class="action-group"><th colspan="6">${label}</th></tr>`;
+const groupHeading=(key,label)=>`<tr class="action-group"><th colspan="6"><button type="button" class="action-group-toggle" data-action-group="${key}" aria-expanded="${!collapsedActionGroups.has(key)}">${label}</button></th></tr>`;
 const renderedRows=data.map((x,i)=>`<tr><td><div class="project-cell" data-domain="${escape(x.domain)}"><span class="project" title="${escape(x.project)}">${escape(x.project)}</span>${current==='Overview'?`<div class="light domain-label">${escape(x.domain)}</div>`:''}</div></td><td class="action"><span class="action-preview" title="${escape(x.action)}">${escape(actionPreview(x.action))}</span></td><td><span class="pill ${x.status.replace(/\s+/g,'')}">${escape(x.status)}</span></td><td class="light">${escape(x.priority)}</td><td class="light" style="white-space:nowrap">${escape(x.due)}</td><td><button class="row-open" data-i="${i}" aria-controls="detail-${i}" aria-expanded="false">Details</button></td></tr><tr class="details-row"><td colspan="6" style="padding:0;border:0"><div class="extra" id="detail-${i}"><p><strong>Next action:</strong> ${escape(x.action)}</p>${x.notes?`<div class="action-notes">${formatActionNotes(x.notes)}</div>`:''}${x.domain==='R2DX'?privateNotesPanel(x):''}${x.stage?`<div style="margin-top:7px"><strong>Tracker stage:</strong> ${escape(x.stage)}</div>`:''}${x.source?`<a href="${escape(x.source)}" target="_blank" rel="noopener" style="color:#384b57;display:inline-block;margin-top:8px">Open source tracker ↗</a>`:''}</div></td></tr>`);
 $('#rows').innerHTML=groupRequired&&data.length
- ? groupHeading('Action required today')+(todayCount?renderedRows.slice(0,todayCount).join(''):'<tr><td colspan="6" class="light">No actions marked Today.</td></tr>')
-   +(todayCount<data.length?groupHeading('Other action required')+renderedRows.slice(todayCount).join(''):'')
+ ? groupHeading('today','Action required today')+(todayCount?renderedRows.slice(0,todayCount).join(''):'<tr><td colspan="6" class="light">No actions marked Today.</td></tr>')
+   +(todayCount<data.length?groupHeading('other','Other action required')+renderedRows.slice(todayCount).join(''):'')
  : renderedRows.join('');
+$('#rows').querySelectorAll('.action-group-toggle').forEach(button=>{
+ syncActionGroup(button);
+ button.addEventListener('click',()=>{
+  const key=button.dataset.actionGroup;
+  if(collapsedActionGroups.has(key))collapsedActionGroups.delete(key);
+  else collapsedActionGroups.add(key);
+  syncActionGroup(button);
+ });
+});
 $('#rows').querySelectorAll('.row-open').forEach(b=>b.addEventListener('click',()=>{const d=$('#detail-'+b.dataset.i);d.classList.toggle('show');b.setAttribute('aria-expanded',d.classList.contains('show'));b.textContent=d.classList.contains('show')?'Close':'Details';if(d.classList.contains('show')&&data[b.dataset.i].domain==='R2DX')loadPrivateNotes(data[b.dataset.i],d)}));
 $('#resources').innerHTML=(resourceMap[current]||[]).map(n=>`<div class="simple-line"><div><strong>${n==='Humanaut tracker'?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="https://docs.google.com/spreadsheets/d/1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ/edit" target="_blank" rel="noopener">Humanaut tracker ↗</a>':loomResourceUrls[n]?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="'+escape(loomResourceUrls[n])+'" target="_blank" rel="noopener">'+escape(n)+' ↗</a>':escape(n)}</strong><small>${n==='Humanaut tracker'?'Live tracker source':n==='IFS guide and worksheets'?'Practical IFS introduction · resources and worksheet downloads':'Reference · integration pending'}</small></div></div>`).join('');
 $('#briefsSection').classList.toggle('hidden',current!=='CCFA');
