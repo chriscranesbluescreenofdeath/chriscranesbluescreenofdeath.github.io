@@ -16,25 +16,44 @@ section.innerHTML='<div class="section-head"><h2>Upcoming this week</h2><span>Ro
 '<div id="calendarSetup" class="loom-calendar-setup hidden"><strong>Calendar connection settings</strong><p>The Loom includes its default Google Calendar connection on every device. You can optionally override the client ID in this browser. Private events and access tokens are never saved to GitHub.</p><label for="calendarClientId">OAuth Client ID</label><input id="calendarClientId" type="text" placeholder="xxxx.apps.googleusercontent.com"> <button id="calendarSave" type="button">Save setting</button> <button id="calendarDisconnect" type="button">Disconnect</button></div>';
 footer.before(section);
 var css=document.createElement('style');
-css.textContent='#loom-calendar{margin-top:44px}.loom-calendar-toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:15px;color:#757771;font-size:12px;margin-bottom:14px}.loom-calendar-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.loom-calendar-actions button,.loom-calendar-setup button{font:inherit;border:1px solid #d8d7d2;border-radius:6px;background:white;padding:9px 12px;color:#252725;font-weight:600}.loom-calendar-actions a,.loom-event a{color:#395366;text-underline-offset:3px}.loom-calendar-setup{margin-top:13px;background:#fff;border:1px solid #e5e3de;padding:18px;border-radius:8px;font-size:13px;line-height:1.7}.loom-calendar-setup p{max-width:850px}.loom-calendar-setup label{display:block;font-weight:650}.loom-calendar-setup input{width:min(480px,100%);padding:10px;border:1px solid #d8d7d2;border-radius:5px}.loom-event{display:flex;justify-content:space-between;gap:18px;align-items:baseline;padding:16px 4px;border-bottom:1px solid #eeece8;font-size:13px}.loom-event:last-child{border:0}.loom-event strong{font-weight:650}.loom-event time,.loom-event small{color:#777a75;font-size:12px}.loom-event small{display:block;margin-top:5px}.loom-conflict{color:#94501d;font-weight:750;margin-left:9px;font-size:11px}@media(max-width:600px){.loom-event{flex-direction:column;gap:5px}}';
+css.textContent='#loom-calendar{margin-top:44px}.loom-calendar-toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:15px;color:#757771;font-size:12px;margin-bottom:14px}.loom-calendar-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.loom-calendar-actions button,.loom-calendar-setup button{font:inherit;border:1px solid #d8d7d2;border-radius:6px;background:white;padding:9px 12px;color:#252725;font-weight:600}.loom-calendar-actions a,.loom-event a{color:#395366;text-underline-offset:3px}.loom-calendar-setup{margin-top:13px;background:#fff;border:1px solid #e5e3de;padding:18px;border-radius:8px;font-size:13px;line-height:1.7}.loom-calendar-setup p{max-width:850px}.loom-calendar-setup label{display:block;font-weight:650}.loom-calendar-setup input{width:min(480px,100%);padding:10px;border:1px solid #d8d7d2;border-radius:5px}.loom-calendar-day+.loom-calendar-day{border-top:1px solid #e5e3de}.loom-calendar-day h3{margin:0;padding:12px 16px;background:#f1efeb;font-size:15px;font-weight:750}.loom-event{display:grid;grid-template-columns:minmax(82px,100px) minmax(0,1fr) auto;gap:14px;align-items:baseline;padding:13px 16px;border-bottom:1px solid #eeece8;font-size:13px}.loom-event:last-child{border:0}.loom-event strong{font-weight:650}.loom-event time,.loom-event small{color:#777a75;font-size:12px}.loom-event small{display:block;margin-top:5px}.loom-conflict{color:#94501d;font-weight:750;margin-left:9px;font-size:11px}@media(max-width:600px){.loom-event{grid-template-columns:70px minmax(0,1fr);gap:6px 10px}.loom-event>a{grid-column:2}}';
 document.head.appendChild(css);
 function el(id){return section.querySelector('#'+id)}
 function message(s){el('calendarMessage').textContent=s}
 function safe(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function formatDate(d){return new Intl.DateTimeFormat('en-US',{timeZone:TZ,weekday:'short',month:'short',day:'numeric'}).format(d)}
+var centralDay=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'});
+function centralDateKey(date){
+ var parts=centralDay.formatToParts(date);
+ return ['year','month','day'].map(function(type){
+  return parts.find(function(part){return part.type===type}).value;
+ }).join('-');
+}
+var dayHeading=new Intl.DateTimeFormat('en-US',{timeZone:'UTC',weekday:'long',month:'long',day:'numeric'});
 function formatTime(d){return new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',minute:'2-digit'}).format(d)}
 function toEvent(e){
  var allDay=!!(e.start&&e.start.date);
  var start=new Date(allDay?e.start.date+'T12:00:00-06:00':e.start.dateTime);
  var end=new Date(allDay?e.end.date+'T12:00:00-06:00':e.end.dateTime);
- return {title:e.summary||'Untitled',start:start.getTime(),end:end.getTime(),allDay:allDay,url:e.htmlLink||'',location:e.location||'',when:formatDate(start)+(allDay?' · All day':' · '+formatTime(start)),endTime:allDay?'':formatTime(end)};
+ return {title:e.summary||'Untitled',start:start.getTime(),end:end.getTime(),allDay:allDay,url:e.htmlLink||'',location:e.location||'',day:allDay?e.start.date:centralDateKey(start),when:allDay?'All day':formatTime(start),endTime:allDay?'':formatTime(end)};
 }
 function renderEvents(items){
  var list=items.filter(function(e){return e.status!=='cancelled'&&!/school drop.off|morning prep/i.test(e.summary||'')}).map(toEvent).filter(function(e){return Number.isFinite(e.start)}).sort(function(a,b){return a.start-b.start});
  var overlaps=new Set();
  list.forEach(function(a,i){list.forEach(function(b,j){if(j>i&&!a.allDay&&!b.allDay&&a.start<b.end&&b.start<a.end){overlaps.add(i);overlaps.add(j)}})});
- el('calendarEvents').innerHTML=list.length?list.map(function(e,i){
-  return '<div class="loom-event"><div><strong>'+safe(e.title)+(overlaps.has(i)?'<span class="loom-conflict">Scheduling conflict</span>':'')+'</strong><small>'+safe(e.location)+(e.endTime?' · Ends '+safe(e.endTime):'')+'</small></div><div><time>'+safe(e.when)+'</time>'+(e.url?'<div><a target="_blank" rel="noopener" href="'+safe(e.url)+'">Open event ↗</a></div>':'')+'</div></div>';
+ var days=new Map();
+ list.forEach(function(event,index){
+  if(!days.has(event.day))days.set(event.day,[]);
+  days.get(event.day).push({event:event,conflict:overlaps.has(index)});
+ });
+ el('calendarEvents').innerHTML=list.length?Array.from(days,function(entry){
+  var day=entry[0], events=entry[1];
+  events.sort(function(a,b){return Number(b.event.allDay)-Number(a.event.allDay)||a.event.start-b.event.start});
+  var heading=dayHeading.format(new Date(day+'T00:00:00Z'));
+  return '<section class="loom-calendar-day"><h3>'+safe(heading)+'</h3>'+events.map(function(row){
+   var e=row.event;
+   var details=[e.location,e.endTime?'Ends '+e.endTime:''].filter(Boolean).join(' · ');
+   return '<div class="loom-event"><time>'+safe(e.when)+'</time><div><strong>'+safe(e.title)+(row.conflict?'<span class="loom-conflict">Scheduling conflict</span>':'')+'</strong>'+(details?'<small>'+safe(details)+'</small>':'')+'</div>'+(e.url?'<a target="_blank" rel="noopener" href="'+safe(e.url)+'">Open event ↗</a>':'')+'</div>';
+  }).join('')+'</section>';
  }).join(''):'<div class="empty">No nonroutine events in the next seven days.</div>';
  message(list.length+' nonroutine events · '+overlaps.size+' events involved in overlaps · updated '+formatTime(new Date()));
  el('calendarRefresh').hidden=false;
