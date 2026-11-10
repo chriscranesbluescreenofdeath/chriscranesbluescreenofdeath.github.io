@@ -47,10 +47,10 @@
 </head>
 <body>
 <header class="header wrap"><div class="header-line"><div><div class="brand">THE LOOM</div><div class="subbrand">A clearer view of everything in motion</div></div><div class="date" id="date"></div></div><nav class="nav" aria-label="Dashboard domains" id="nav"></nav></header>
-<main class="main wrap"><div class="intro"><div><div class="eyebrow" id="eyebrow">Your workspace</div><h1 class="title" id="title">Overview</h1><p class="description" id="description"></p></div><div class="sync" id="sync"><span id="syncText">THE LOOM · CONNECTING</span> <button id="refreshLive" type="button" class="sync-button" title="Refresh registered sources">↻ Refresh</button> <button id="registrySettings" type="button" class="sync-button" title="Configure Master Registry">⚙ Registry</button></div></div><div id="liveError" class="data-error-box hidden" role="status"></div><div class="filters"><div class="filter-group"><label for="projectFilter">Project</label><select id="projectFilter" class="input select"></select></div><div class="filter-group"><label for="statusFilter">Status</label><select id="statusFilter" class="input select"><option value="Active" selected>Active</option><option value="Active · Action Required">Active · Action Required</option><option value="Active · In Progress">Active · In Progress</option><option value="Complete">Complete</option><option value="All">All statuses</option></select></div><div class="filter-group search"><label for="search">Search</label><input id="search" class="input" placeholder="Search actions, projects, notes..." type="search"></div></div><div class="kpis" id="kpis"></div><div class="section-head"><h2>Projects &amp; next steps</h2><span id="count"></span></div><div class="table-box table-scroll"><table class="data-table"><thead><tr><th>Project</th><th>Next action</th><th>Action status</th><th>Priority</th><th>Due</th><th></th></tr></thead><tbody id="rows"></tbody></table><div id="empty" class="empty hidden">No actions match the current filters.</div></div><div class="section-head"><h2>Resources</h2><span>Reference points</span></div><div class="simple-list" id="resources"></div><div id="briefsSection" class="hidden"><div class="section-head"><h2>Briefs</h2><span>CCFA · Humanaut</span></div><div class="simple-list" id="briefs"></div></div><div class="sample-notice">Project endpoints are managed in The Loom Master Registry. Humanaut uses your published CSV endpoint; other domains remain illustrative until configured. Read-only; nothing is written back.</div><footer class="foot"><span>THE LOOM · Personal operating view</span><span>Built as a static front-end prototype</span></footer></main>
+<main class="main wrap"><div class="intro"><div><div class="eyebrow" id="eyebrow">Your workspace</div><h1 class="title" id="title">Overview</h1><p class="description" id="description"></p></div><div class="sync" id="sync"><span id="syncText">THE LOOM · CONNECTING</span> <button id="refreshLive" type="button" class="sync-button" title="Refresh registered sources">↻ Refresh</button> <button id="registrySettings" type="button" class="sync-button" title="Configure Master Registry">⚙ Registry</button></div></div><div id="liveError" class="data-error-box hidden" role="status"></div><div class="filters"><div class="filter-group"><label for="projectFilter">Project</label><select id="projectFilter" class="input select"></select></div><div class="filter-group"><label for="statusFilter">Status</label><select id="statusFilter" class="input select"><option value="Today" selected>Today</option><option value="Active">Active</option><option value="Active · Action Required">Active · Action Required</option><option value="Active · In Progress">Active · In Progress</option><option value="Complete">Complete</option><option value="All">All statuses</option></select></div><div class="filter-group search"><label for="search">Search</label><input id="search" class="input" placeholder="Search actions, projects, notes..." type="search"></div></div><div class="kpis" id="kpis"></div><div class="section-head"><h2 id="actionHeading">Today’s priorities</h2><span id="count"></span></div><div class="table-box table-scroll"><table class="data-table"><thead><tr><th>Project</th><th>Next action</th><th>Action status</th><th>Priority</th><th>Due</th><th></th></tr></thead><tbody id="rows"></tbody></table><div id="empty" class="empty hidden">No actions match the current filters.</div></div><div class="section-head"><h2>Resources</h2><span>Reference points</span></div><div class="simple-list" id="resources"></div><div id="briefsSection" class="hidden"><div class="section-head"><h2>Briefs</h2><span>CCFA · Humanaut</span></div><div class="simple-list" id="briefs"></div></div><div class="sample-notice">Project endpoints are managed in The Loom Master Registry. Humanaut uses your published CSV endpoint; other domains remain illustrative until configured. Read-only; nothing is written back.</div><footer class="foot"><span>THE LOOM · Personal operating view</span><span>Built as a static front-end prototype</span></footer></main>
 <script>
 'use strict';
-const domains=[['Overview','Everything that needs attention across your worlds.'],['CCFA','Fine art commissions, relationships, production, and outreach.'],['R2DX','Oliver’s recruiting, academic milestones, and outreach.'],['Family','Family schedules and shared responsibilities.'],['Personal','The small and significant things outside work.']];
+const domains=[['Overview','Your selected priorities across all connected trackers.'],['CCFA','Fine art commissions, relationships, production, and outreach.'],['R2DX','Oliver’s recruiting, academic milestones, and outreach.'],['Family','Family schedules and shared responsibilities.'],['Personal','The small and significant things outside work.']];
 let entries=[
 {domain:'R2DX',project:'College outreach',action:'Follow up with Mary Hardin-Baylor coach',status:'Active',priority:'High',due:'Nov 6',notes:'Respond regarding game attendance and recruiting information.'},
 {domain:'R2DX',project:'College outreach',action:'Review Babson camp correspondence',status:'Waiting',priority:'Medium',due:'Nov 9',notes:'Check for response and next steps.'},
@@ -69,8 +69,10 @@ const briefLinks=[
 ['Humanaut Collection — Client Experience Positioning Brief','https://docs.google.com/document/d/1TIw-XWuaVJYXT4AEstPhTUKw1696TAAy/edit']
 ];
 const $=s=>document.querySelector(s);let current=localStorage.getItem('loom_domain')||'Overview';if(!domains.some(d=>d[0]===current))current='Overview';
+const defaultStatus=()=>current==='Overview'?'Today':'Active';
+$('#statusFilter').value=defaultStatus();
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const nav=$('#nav');for(const [name] of domains){let b=document.createElement('button');b.className='tab';b.textContent=name;if(name!=='Overview')b.dataset.domain=name;b.type='button';b.addEventListener('click',()=>{current=name;localStorage.setItem('loom_domain',name);$('#projectFilter').value='All';$('#statusFilter').value='Active';$('#search').value='';render()});nav.append(b)}
+const nav=$('#nav');for(const [name] of domains){let b=document.createElement('button');b.className='tab';b.textContent=name;if(name!=='Overview')b.dataset.domain=name;b.type='button';b.addEventListener('click',()=>{current=name;localStorage.setItem('loom_domain',name);$('#projectFilter').value='All';$('#statusFilter').value=defaultStatus();$('#search').value='';render()});nav.append(b)}
 const fmt=new Intl.DateTimeFormat('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',timeZone:'America/Chicago',timeZoneName:'short'});$('#date').textContent=fmt.format(new Date());
 for(const id of ['projectFilter','statusFilter','search'])$('#'+id).addEventListener(id==='search'?'input':'change',render);
 // Prefer an explicitly marked next action over historical context in long notes.
@@ -151,10 +153,16 @@ function render(){
 $('#eyebrow').textContent=current==='Overview'?'All domains':current+' · Focus view';$('#title').textContent=current==='Overview'?'Your overview':current;$('#description').textContent=domains.find(d=>d[0]===current)[1];
 const previous=$('#projectFilter').value||'All';const projs=[...new Set(visibleDomain().map(x=>x.project))].sort();$('#projectFilter').innerHTML='<option value="All">All projects</option>'+projs.map(p=>`<option value="${escape(p)}">${escape(p)}</option>`).join('');$('#projectFilter').value=projs.includes(previous)?previous:'All';
 const project=$('#projectFilter').value,status=$('#statusFilter').value,q=$('#search').value.trim().toLowerCase();
+const todayView=status==='Today';
+$('#statusFilter').options[0].hidden=current!=='Overview';
+$('#statusFilter').options[0].disabled=current!=='Overview';
+$('#actionHeading').textContent=todayView?'Today’s priorities':'Projects & next steps';
+$('#kpis').classList.toggle('hidden',todayView);
 const stateOf=x=>x.projectState||(x.status==='Complete'?'Complete':'Active');
 const required=x=>x.actionStatus==='Action Required'||(!x.actionStatus&&['Open','Waiting','Blocked','Deferred'].includes(x.status));
 const matchStatus=x=>{
- if(x.id==='PROGRAM')return true; // Keep the program-wide action visible in every view.
+ if(todayView)return x.today&&['Active','Program'].includes(stateOf(x))&&!['deferred','on hold','cancelled','canceled'].includes(String(x.stage||'').toLowerCase());
+ if(x.id==='PROGRAM')return true; // Keep the program action visible in backlog views.
  const state=stateOf(x);
  if(status==='All')return true;
  if(status==='Complete')return state==='Complete';
@@ -165,6 +173,8 @@ const matchStatus=x=>{
  return false;
 };
 let data=visibleDomain().filter(x=>(project==='All'||x.project===project||x.id==='PROGRAM')&&matchStatus(x)&&(!q||x.id==='PROGRAM'||[x.project,x.action,x.notes,x.priority,x.status,x.stage].join(' ').toLowerCase().includes(q)));
+if(todayView)data.sort((a,b)=>a.todayOrder-b.todayOrder);
+$('#empty').textContent=todayView&&!q&&project==='All'?'No active tasks are marked Today in the connected trackers.':'No actions match the current filters.';
 const counts=[data.length,data.filter(x=>stateOf(x)==='Active').length,data.filter(required).length,data.filter(x=>stateOf(x)==='Complete').length];
 $('#kpis').innerHTML=['Showing','Active sites','Action required','Complete'].map((k,i)=>`<div class="kpi"><div class="kpi-val">${counts[i]}</div><div class="kpi-label">${k}</div></div>`).join('');
 $('#count').textContent=data.length+' records';$('#empty').classList.toggle('hidden',data.length>0);
@@ -286,6 +296,10 @@ function normalizeHumanautStage(stage,src=BOOTSTRAP_HUMANAUT){
  return 'Active'; // Includes Installed until the final payment milestone.
 }
 function humanDate(d){if(!d||!/\d/.test(d))return '—';const x=new Date(d);return Number.isNaN(x.getTime())?String(d):x.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function todayFields(flag,order){
+ const rank=Number(order);
+ return {today:/^(yes|true)$/i.test(String(flag).trim()),todayOrder:rank>0&&Number.isFinite(rank)?rank:Infinity};
+}
 function toHumanautActions(csv,src=BOOTSTRAP_HUMANAUT){
  const sourceUrl=src.source;
   const rows=parseCsv(csv);const headerIndex=rows.findIndex(r=>String(r[0]||'').trim()==='Project ID'&&String(r[1]||'').trim()==='Project / Address');
@@ -302,7 +316,7 @@ function toHumanautActions(csv,src=BOOTSTRAP_HUMANAUT){
     const actionStatus=next?'Action Required':'In Progress';
     const status=projectState==='Complete'?'Complete':projectState==='Pipeline'?'Pipeline':actionStatus;
     const notes=[next?null:'No next step recorded in column E.',stage?'Current milestone: '+stage:null,prod?'Expected production complete: '+prod:null,install?'Install scheduled: '+install:null].filter(Boolean).join(' ');
-    return {domain:'CCFA',project:id==='PROGRAM'?'Humanaut · Program':`Humanaut · ${place}`,action:next||'No next step recorded',status,projectState,actionStatus,priority:'—',due:install?humanDate(install):prod?humanDate(prod):'—',notes,id,stage,source:sourceUrl||BOOTSTRAP_HUMANAUT.source};
+    return {...todayFields(cell(r,'Today'),cell(r,'Today Order')),domain:'CCFA',project:id==='PROGRAM'?'Humanaut · Program':`Humanaut · ${place}`,action:next||'No next step recorded',status,projectState,actionStatus,priority:'—',due:install?humanDate(install):prod?humanDate(prod):'—',notes,id,stage,source:sourceUrl||BOOTSTRAP_HUMANAUT.source};
 
   });
 }
@@ -323,7 +337,7 @@ function toCcfaActions(csv,src){
   const projectState=st==='complete'?'Complete':(['not started','planning','pipeline','cancelled'].includes(st)?'Pipeline':'Active');
   const actionStatus=next?'Action Required':'In Progress';
   const status=projectState==='Active'?actionStatus:projectState;
-  return {domain:src.domain||'CCFA',project:get(r,'Project / Initiative')||'CCFA Sales & Marketing',action:next||deliverable||'No next step recorded',status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Next Action Due')||get(r,'Target Date')||'—',notes:[deliverable,get(r,'Dependencies / Context'),get(r,'Cadence')?'Cadence: '+get(r,'Cadence'):null].filter(Boolean).join(' · '),source:get(r,'Source Link')||src.source};
+  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'CCFA',project:get(r,'Project / Initiative')||'CCFA Sales & Marketing',action:next||deliverable||'No next step recorded',status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Next Action Due')||get(r,'Target Date')||'—',notes:[deliverable,get(r,'Dependencies / Context'),get(r,'Cadence')?'Cadence: '+get(r,'Cadence'):null].filter(Boolean).join(' · '),source:get(r,'Source Link')||src.source};
  });
 }
 
@@ -337,7 +351,7 @@ function toR2dxActions(csv,src){
   const actionStatus=s==='in progress'?'In Progress':'Action Required';
   const status=projectState==='Active'?actionStatus:projectState;
   const action=get(r,'Action')||get(r,'Next Step')||'No next action recorded';
-  return {domain:'R2DX',project:get(r,'Project')||'Recruiting',action,status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due Date')||'—',notes:get(r,'Notes')||get(r,'Details')||get(r,'Instructions')||'',source:src.source};
+  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:'R2DX',project:get(r,'Project')||'Recruiting',action,status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due Date')||'—',notes:get(r,'Notes')||get(r,'Details')||get(r,'Instructions')||'',source:src.source};
  });
 }
 
@@ -349,7 +363,7 @@ function toPersonalActions(csv,src){
   const stage=get(r,'Status')||get(r,'Status / Notes'),st=stage.toLowerCase();
   const projectState=['done','complete','completed','cancelled'].includes(st)?'Complete':'Active';
   const next=get(r,'Next action')||get(r,'Next Steps / Notes'),actionStatus=next?'Action Required':'In Progress';
-  return {domain:src.domain||'Personal',project:get(r,'Project')||'Personal',action:next||get(r,'Action')||'No next step recorded',status:projectState==='Complete'?'Complete':actionStatus,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due date')||get(r,'Next review')||'—',notes:[get(r,'Action'),get(r,'Notes')].filter(Boolean).join(' · '),source:get(r,'Link')||src.source};
+  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'Personal',project:get(r,'Project')||'Personal',action:next||get(r,'Action')||'No next step recorded',status:projectState==='Complete'?'Complete':actionStatus,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due date')||get(r,'Next review')||'—',notes:[get(r,'Action'),get(r,'Notes')].filter(Boolean).join(' · '),source:get(r,'Link')||src.source};
  });
 }
 
