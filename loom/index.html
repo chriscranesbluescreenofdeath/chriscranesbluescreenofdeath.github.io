@@ -50,6 +50,9 @@
 .action-group-toggle::before{content:"";width:7px;height:7px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(-45deg)}
 .action-group-toggle[aria-expanded="true"]::before{transform:translateY(-2px) rotate(45deg)}
 .action-group-toggle:focus-visible{outline:2px solid var(--ink);outline-offset:-3px}
+
+/* Full in-dashboard trip reference, independent of Drive */
+.trip-resource{width:100%;padding:4px 0}.trip-resource summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0}.trip-resource summary::-webkit-details-marker{display:none}.trip-resource summary:after{content:"View itinerary ▾";font-size:12px;color:#4c6070;white-space:nowrap}.trip-resource[open] summary:after{content:"Collapse ▴"}.trip-resource .trip-body{padding:8px 0 22px;max-width:940px}.trip-resource h3{font-size:16px;margin:27px 0 10px}.trip-resource h4{font-size:13px;margin:20px 0 8px}.trip-resource p{margin:7px 0;line-height:1.65;font-size:13px}.trip-resource table{width:100%;border-collapse:collapse;margin:8px 0 18px;table-layout:fixed}.trip-resource th,.trip-resource td{font-size:12px;line-height:1.55;text-align:left;vertical-align:top;border-bottom:1px solid #eae9e5;padding:9px 8px}.trip-resource th:first-child,.trip-resource td:first-child{width:95px;font-weight:650}.trip-resource ul{margin:8px 0;padding-left:22px}.trip-resource li{font-size:13px;line-height:1.8}.trip-resource .trip-meta{color:#777873}.trip-resource .trip-note{background:#f8f7f4;padding:10px 12px;border-left:3px solid #a2a5a2}.trip-resource a{color:#395366;text-decoration:underline;text-underline-offset:3px}@media(max-width:600px){.trip-resource table{table-layout:auto}.trip-resource th:first-child,.trip-resource td:first-child{width:73px}.trip-resource th,.trip-resource td{padding:8px 5px}}
 </style>
 </head>
 <body>
@@ -69,6 +72,68 @@ let entries=[
 ];
 const resourceMap={Overview:['CCFA project tracker','R2DX recruiting tracker','Family calendar','Personal tracker'],CCFA:['Humanaut tracker','Designer & architect outreach tracker','Art production references','Art Has a Job — Practice Thesis'],R2DX:['R2DX recruiting tracker','Oliver’s public profile','College target list'],Family:['Family calendar','School resources'],Personal:['Personal tracker','IFS guide and worksheets','Marfa itinerary']};
 const loomResourceUrls={'Art Has a Job — Practice Thesis':'https://docs.google.com/document/d/1z34iliRcQfqQBPpne_-X4gy3x7YYYkhcu3zifoLu9js/edit','IFS guide and worksheets':'https://chriscranesbluescreenofdeath.github.io/ifs/','Designer & architect outreach tracker':'https://docs.google.com/spreadsheets/d/1d7b115EtSw0Rh5C1FpwnSA1qa8ipTJlzhuvd8ov4Kp8/edit','Personal tracker':'https://docs.google.com/spreadsheets/d/1ZL80iKDwNCRDo3SRdPeYg1JKbSlyfhpwUKjKWO51D1c/edit','Marfa itinerary':'https://docs.google.com/document/d/1TrPuLWYV3MO1C2lU33GNBOI0Q1dX_O7LYB70_I9MYts/edit'};
+
+const marfaResourceHtml = `
+<details class="trip-resource">
+<summary><span><strong>Marfa / Big Bend itinerary · Nov 19–22, 2026</strong><small>Four days · three nights · full schedule, lodging and packing below</small></span></summary>
+<div class="trip-body">
+<p class="trip-meta">Austin → Marfa → Marathon → Big Bend / Terlingua → Austin. Thursday–Sunday, November 19–22, 2026. Information only; no task or reminder.</p>
+<h3>At a glance</h3>
+<table><thead><tr><th>Night</th><th>Where and notes</th></tr></thead><tbody>
+<tr><td>Thu 11/19</td><td>Thunderbird Hotel, Marfa. Dinner at Hotel Saint George / LaVenture.</td></tr>
+<tr><td>Fri 11/20</td><td>Stardust Big Bend A-frame, Terlingua. Check-in 4 PM; park in the lot, walk to the cabin.</td></tr>
+<tr><td>Sat 11/21</td><td>Stardust Big Bend A-frame, Terlingua. Sunday checkout 10 AM.</td></tr>
+</tbody></table>
+<p class="trip-note"><strong>Still to book (per itinerary):</strong> Thursday LaVenture dinner, 6:30 PM. Listed here as reference only.</p>
+<h3>Thursday 11/19 · Austin to Marfa</h3>
+<table><thead><tr><th>Time</th><th>Stop and details</th></tr></thead><tbody>
+<tr><td>8:00 AM</td><td><strong>Depart Austin.</strong> West on US-290, about 1.5 hours to Fredericksburg.</td></tr>
+<tr><td>9:30 AM</td><td><strong>Hilda’s Tortillas, Fredericksburg.</strong> Breakfast tacos on house-made tortillas, 149 FM 2093. Open 6 AM; closed Sundays. Leave by 10:15.</td></tr>
+<tr><td>3:30 PM</td><td><strong>Fort Davis National Historic Site.</strong> About 5 hours via I-10. Restored 1854–1891 frontier fort and Buffalo Soldier history. Open until 5 PM; about 1.5 hours on site.</td></tr>
+<tr><td>5:00 PM</td><td><strong>Thunderbird Hotel, Marfa.</strong> Check in; 25 minutes from Fort Davis.</td></tr>
+<tr><td>6:30 PM</td><td><strong>Hotel Saint George.</strong> Drinks and early dinner at LaVenture, a short walk. Not booked yet.</td></tr>
+<tr><td>8:00 PM</td><td><strong>Planet Marfa.</strong> Red McAdam show. Mostly outdoors, so dress warm.</td></tr>
+<tr><td>Late</td><td><strong>Optional Marfa Lights Viewing Area.</strong> Nine miles east on US-90; sober driver required. Otherwise move to Friday night on the way out or skip.</td></tr>
+</tbody></table>
+<h3>Friday 11/20 · Marfa to Terlingua</h3>
+<table><thead><tr><th>Time</th><th>Stop and details</th></tr></thead><tbody>
+<tr><td>9:00 AM</td><td><strong>Marfa Book Company.</strong> Inside Hotel Saint George. Art, photography and Texas books. Opens 9 AM daily.</td></tr>
+<tr><td>9:30 AM</td><td><strong>Greasewood Gallery, Hotel Paisano.</strong> Local artists, 207 N Highland. Opens 9 AM. Walk the Paisano lobby (Giant was filmed here).</td></tr>
+<tr><td>10:15 AM</td><td><strong>Cobra Rock.</strong> Handmade boots and independent designers, 211 S Dean St. Opens 10 AM Wednesday–Sunday.</td></tr>
+<tr><td>11:00 AM</td><td><strong>Ballroom Marfa.</strong> Contemporary art in a 1927 dancehall, 108 E San Antonio St. Free. Opens 11 AM Wednesday–Sunday.</td></tr>
+<tr><td>12:00 PM</td><td><strong>Wrong Marfa.</strong> Shop and gallery, 110 N Highland Ave. Opens noon. Leave Marfa by 12:45.</td></tr>
+<tr><td>1:45 PM</td><td><strong>Gage Hotel, Marathon.</strong> About 1 hour from Marfa. Late lunch at 12 Gage, drinks at White Buffalo Bar. Pick a driver; leave by 2:45.</td></tr>
+<tr><td>3:30 PM</td><td><strong>Persimmon Gap entrance.</strong> Buy the 7-day Big Bend park pass; watch for javelina and mule deer on drive south.</td></tr>
+<tr><td>5:30 PM</td><td><strong>Stardust Big Bend, Terlingua.</strong> Arrive before dark (sunset approx. 5:55 PM). Fire pit and stars. Park in lot; walk to A-frame.</td></tr>
+</tbody></table>
+<h3>Saturday 11/21 · Park day</h3>
+<table><thead><tr><th>Time</th><th>Stop and details</th></tr></thead><tbody>
+<tr><td>7:00 AM</td><td><strong>Window Trail, Chisos Basin.</strong> 5.6 miles round trip; downhill out, roughly 1,000 feet up on return. Small lot, arrive early. About 1 hour from Terlingua.</td></tr>
+<tr><td>11:30 AM</td><td><strong>Boquillas Crossing.</strong> Passports required. Listed hours Thursday–Sunday, 9 AM–4 PM. Rowboat $5, Mexico park fee $7, cash only.</td></tr>
+<tr><td>2:30 PM</td><td><strong>Ernst Tinaja.</strong> Five miles up Old Ore Road, true 4x4 only. 1.6-mile round trip to a 13-foot rock pool. Without 4x4: Boquillas Canyon Trail (1.4 miles).</td></tr>
+<tr><td>4:30 PM</td><td><strong>Rio Grande Village Nature Trail.</strong> Under a mile. Beaver pond boardwalk; sunset from the overlook.</td></tr>
+<tr><td>7:00 PM</td><td><strong>Starlight Theatre, Terlingua.</strong> Get in line early; Trading Company porch for a drink while waiting. No reservations or split checks. Try chicken-fried antelope.</td></tr>
+</tbody></table>
+<h3>Sunday 11/22 · Castolon and home</h3>
+<table><thead><tr><th>Time</th><th>Stop and details</th></tr></thead><tbody>
+<tr><td>8:30 AM</td><td><strong>Terlingua Ghost Town and cemetery.</strong> Quicksilver mining ruins, about 1900–1940s; hand-built crosses at the cemetery, best in morning light. Three minutes from Stardust.</td></tr>
+<tr><td>9:30 AM</td><td><strong>Check out.</strong> Load the car first.</td></tr>
+<tr><td>10:00 AM</td><td><strong>Castolon Historic District.</strong> Via Ross Maxwell Scenic Drive. 1920 army compound, Old Castolon exhibit, half-mile walk. Stop at Sotol Vista and Mule Ears overlooks. About 45 minutes each way.</td></tr>
+<tr><td>12:30 PM</td><td><strong>Drive home.</strong> Approx. seven hours via Marathon and I-10. Fill up before leaving Big Bend area.</td></tr>
+</tbody></table>
+<h3>Packing checklist</h3>
+<p class="trip-meta">Bring everything from Austin; no grocery stops planned. Checked boxes reproduce your original list, not live completion statuses.</p>
+<h4>Drinks</h4>
+<ul><li>☑ Water — 2 gallons each</li><li>☑ Modelo — 12-pack</li><li>☑ Lalo tequila</li><li>☑ Key lime juice</li><li>☑ Rambler — 12-pack</li></ul>
+<h4>Food</h4>
+<ul><li>☐ Steaks</li><li>☐ Salt, pepper, foil</li><li>☐ Coffee</li><li>☑ Protein bars</li><li>☑ Bananas</li><li>☑ Cashews</li><li>☑ Almonds</li><li>☑ Car snacks: sunflower seeds, Bloom</li></ul>
+<h4>Gear</h4>
+<ul><li>☐ Hiking water bottles</li><li>☑ Cooler and ice</li><li>☑ Firewood</li><li>☐ Charcoal and lighter</li><li>☐ Headlamps</li><li>☐ Warm layers and a beanie</li><li>☐ Sunscreen, hat, sunglasses</li><li>☐ Small first aid kit</li></ul>
+<h4>Documents and cash</h4>
+<ul><li>☐ Passports or passport cards</li><li>☐ Cash in $1s and $5s</li><li>☐ Offline Google Maps downloaded for the region</li></ul>
+<p class="trip-meta">Trip schedule and operating details as supplied, not independently verified. <a href="https://docs.google.com/document/d/1TrPuLWYV3MO1C2lU33GNBOI0Q1dX_O7LYB70_I9MYts/edit" target="_blank" rel="noopener">Also available in Google Drive ↗</a></p>
+</div></details>`;
+
 const briefLinks=[
 ['Art Has a Job — The Fundamental Openness of Art','https://docs.google.com/document/d/1z34iliRcQfqQBPpne_-X4gy3x7YYYkhcu3zifoLu9js/edit'],
 ['Humanaut Program Brief','https://docs.google.com/document/d/1pjsehSkCUXd6eaGgQr9fOmpNft3R6OmwulQsx16p7MM/edit'],
@@ -219,7 +284,7 @@ $('#rows').querySelectorAll('.action-group-toggle').forEach(button=>{
  });
 });
 $('#rows').querySelectorAll('.row-open').forEach(b=>b.addEventListener('click',()=>{const d=$('#detail-'+b.dataset.i);d.classList.toggle('show');b.setAttribute('aria-expanded',d.classList.contains('show'));b.textContent=d.classList.contains('show')?'Close':'Details';if(d.classList.contains('show')&&data[b.dataset.i].domain==='R2DX')loadPrivateNotes(data[b.dataset.i],d)}));
-$('#resources').innerHTML=(resourceMap[current]||[]).map(n=>`<div class="simple-line"><div><strong>${n==='Humanaut tracker'?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="https://docs.google.com/spreadsheets/d/1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ/edit" target="_blank" rel="noopener">Humanaut tracker ↗</a>':loomResourceUrls[n]?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="'+escape(loomResourceUrls[n])+'" target="_blank" rel="noopener">'+escape(n)+' ↗</a>':escape(n)}</strong><small>${n==='Humanaut tracker'?'Live tracker source':n==='IFS guide and worksheets'?'Practical IFS introduction · resources and worksheet downloads':'Reference · integration pending'}</small></div></div>`).join('');
+$('#resources').innerHTML=(resourceMap[current]||[]).map(n=>n==='Marfa itinerary'?`<div class="simple-line">${marfaResourceHtml}</div>`:`<div class="simple-line"><div><strong>${n==='Humanaut tracker'?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="https://docs.google.com/spreadsheets/d/1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ/edit" target="_blank" rel="noopener">Humanaut tracker ↗</a>':loomResourceUrls[n]?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="'+escape(loomResourceUrls[n])+'" target="_blank" rel="noopener">'+escape(n)+' ↗</a>':escape(n)}</strong><small>${n==='Humanaut tracker'?'Live tracker source':n==='IFS guide and worksheets'?'Practical IFS introduction · resources and worksheet downloads':'Reference · integration pending'}</small></div></div>`).join('');
 $('#briefsSection').classList.toggle('hidden',current!=='CCFA');
 $('#briefs').innerHTML=current==='CCFA'?briefLinks.map(([title,url])=>`<div class="simple-line"><div><strong><a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="${escape(url)}" target="_blank" rel="noopener">${escape(title)} ↗</a></strong></div></div>`).join(''):'';
 
