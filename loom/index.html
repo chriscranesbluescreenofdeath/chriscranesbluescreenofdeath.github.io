@@ -578,7 +578,7 @@ async function loadRegistry(){
   }catch(e){errors.push(src.project+': '+e.message)}
  }
  const connectedDomains=new Set(dynamic.map(x=>x.domain));
- if(familyPrivateItems.length)connectedDomains.add('Family');
+ connectedDomains.add('Family'); // Never show placeholder Family records when private data is not connected.
  connectedDomains.add('CCFA'); // Live Humanaut takes precedence over CCFA sample entries.
  entries=entries.filter(x=>!connectedDomains.has(x.domain)).concat(dynamic,familyPrivateItems);
  // Remove CCFA illustrative records; the first registered project owns CCFA live view.
