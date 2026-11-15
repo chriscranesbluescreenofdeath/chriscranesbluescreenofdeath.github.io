@@ -518,7 +518,7 @@ function toCcfaActions(csv,src){
   const projectState=st==='complete'?'Complete':(['not started','planning','pipeline','cancelled'].includes(st)?'Pipeline':'Active');
   const actionStatus=next?'Action Required':'In Progress';
   const status=projectState==='Active'?actionStatus:projectState;
-  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'CCFA',project:get(r,'Project / Initiative')||'CCFA Sales & Marketing',action:deliverable||next||'No next step recorded',parentId:get(r,'Parent ID'),itemType:get(r,'Item Type')||'Parent',status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Next Action Due')||get(r,'Target Date')||'—',notes:[deliverable,get(r,'Dependencies / Context'),get(r,'Cadence')?'Cadence: '+get(r,'Cadence'):null].filter(Boolean).join(' · '),taskSource:readTaskSource(r,get),source:src.source};
+  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'CCFA',project:get(r,'Project / Initiative')||'CCFA Sales & Marketing',action:deliverable||next||'No next step recorded',parentId:get(r,'Parent ID'),itemType:get(r,'Item Type')||'Parent',status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Next Action Due')||get(r,'Target Date')||'—',notes:[next,get(r,'Dependencies / Context'),get(r,'Cadence')?'Cadence: '+get(r,'Cadence'):null].filter(Boolean).join(' · '),taskSource:readTaskSource(r,get),source:src.source};
  });
 }
 
@@ -532,7 +532,7 @@ function toR2dxActions(csv,src){
   const actionStatus=s==='in progress'?'In Progress':'Action Required';
   const status=projectState==='Active'?actionStatus:projectState;
   const action=get(r,'Action')||get(r,'Next Step')||'No next action recorded';
-  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:'R2DX',project:get(r,'Project')||'Recruiting',action,status,projectState,actionStatus,stage,parentId:get(r,'Parent ID'),itemType:get(r,'Item Type')||'Parent',id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due Date')||'—',notes:get(r,'Notes')||get(r,'Details')||get(r,'Instructions')||'',source:src.source};
+  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:'R2DX',project:get(r,'Project')||'Recruiting',action,status,projectState,actionStatus,stage,parentId:get(r,'Parent ID'),itemType:get(r,'Item Type')||'Parent',id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due Date')||'—',notes:[get(r,'Next Step'),get(r,'Notes')||get(r,'Details')||get(r,'Instructions')].filter(Boolean).join(' · '),source:src.source};
  });
 }
 
@@ -544,7 +544,7 @@ function toPersonalActions(csv,src){
   const stage=get(r,'Status')||get(r,'Status / Notes'),st=stage.toLowerCase();
   const projectState=['done','complete','completed','cancelled'].includes(st)?'Complete':'Active';
   const next=get(r,'Next action')||get(r,'Next Steps / Notes'),actionStatus=next?'Action Required':'In Progress';
-  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'Personal',project:get(r,'Project')||'Personal',action:get(r,'Action')||next||'No next step recorded',parentId:get(r,'Parent ID'),itemType:get(r,'Item Type')||'Parent',status:projectState==='Complete'?'Complete':actionStatus,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due date')||get(r,'Next review')||'—',notes:[get(r,'Action'),get(r,'Notes')].filter(Boolean).join(' · '),taskSource:readTaskSource(r,get),source:src.source};
+  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'Personal',project:get(r,'Project')||'Personal',action:get(r,'Action')||next||'No next step recorded',parentId:get(r,'Parent ID'),itemType:get(r,'Item Type')||'Parent',status:projectState==='Complete'?'Complete':actionStatus,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due date')||get(r,'Next review')||'—',notes:[next,get(r,'Notes')].filter(Boolean).join(' · '),taskSource:readTaskSource(r,get),source:src.source};
  });
 }
 
