@@ -30,3 +30,9 @@ This file is the durable project pointer for future sessions. Read it before cha
 - Calendar access granted to ChatGPT does **not** authorize a separately hosted static GitHub Pages site.
 - The OAuth client ID is saved in the local browser only. Access tokens are kept in memory and event data is never committed to GitHub or written to published Sheets. Do not put OAuth client secrets or private ICS feed URLs in this repository.
 - This integration is deployed in source but cannot display live events until OAuth has been configured and authorized by the owner. Test Google Cloud OAuth consent settings before announcing end-to-end completion.
+
+## Mandatory daily action UX (November 15, 2026)
+
+- Read [DAILY_ACTION_SKILL.md](DAILY_ACTION_SKILL.md) and Master Registry **Gateway** / **Status Rules** before changing LOOM daily reviews or the dashboard.
+- Each visible action is a single short outcome/next-step headline. Full narrative, evidence, subtasks and links live in the collapsed **Details** panel; mobile and desktop lists cannot wrap into multi-line paragraphs.
+- The weekday Morning Plan and Day Close automations contain the same binding one-line UX instruction. Change those prompts together when revising the contract.
