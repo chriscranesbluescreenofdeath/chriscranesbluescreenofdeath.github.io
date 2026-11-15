@@ -178,7 +178,7 @@ function actionPreview(value){
    .replace(/^\s*(?:[-*\u2022]|\d+[.)])\s*/,'')
    .replace(/\s+/g,' ').trim();
  const sentence=(first.match(/^.{12,}?[.!?](?=\s|$)/)||[])[0]||first;
- const clean=sentence.replace(/(?:\s+(?:Owner|Added|Context|Background|Notes|Dependencies|Next steps)\s*:)?.*$/i,m=>m.startsWith(' Owner:')?'':m).trim();
+ const clean=sentence.split(/\s+(?:Owner|Added|Context|Background|Notes|Dependencies|Next steps)\s*:/i)[0].trim();
  const limit=108;
  if(clean.length<=limit)return clean||'Open for details';
  const cut=clean.slice(0,limit-1);
