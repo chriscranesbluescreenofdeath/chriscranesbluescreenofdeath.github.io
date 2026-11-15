@@ -36,3 +36,8 @@ This file is the durable project pointer for future sessions. Read it before cha
 - Read [DAILY_ACTION_SKILL.md](DAILY_ACTION_SKILL.md) and Master Registry **Gateway** / **Status Rules** before changing LOOM daily reviews or the dashboard.
 - Each visible action is a single short outcome/next-step headline. Full narrative, evidence, subtasks and links live in the collapsed **Details** panel; mobile and desktop lists cannot wrap into multi-line paragraphs.
 - The weekday Morning Plan and Day Close automations contain the same binding one-line UX instruction. Change those prompts together when revising the contract.
+
+## Single-entry LOOM write protocol (November 15, 2026)
+
+- Read [WRITE_ACTION_SKILL.md](WRITE_ACTION_SKILL.md) for any new or revised action, parent/subtask classification, tracker write, or inbox reconciliation.
+- **Family** has a dedicated, private [Family Action Tracker](https://docs.google.com/spreadsheets/d/1GI3t9C279FvJVw5Izg0vDdAR-GwZknGqCCDeLOHLP1E/edit). Family records must not be copied into public CSV; the dashboard has a Google-authorized Family connection control.
