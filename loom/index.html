@@ -73,7 +73,7 @@
  .data-table .action-preview{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .data-table .project{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
-</style>
+.loom-subtasks{margin-top:14px;border-top:1px solid #ddd;padding-top:12px}.loom-subtasks li{margin:8px 0;line-height:1.5}.loom-subtasks ul{padding-left:24px}.loom-subtasks li .pill{margin-right:8px}</style>
 </head>
 <body>
 <header class="header wrap"><div class="header-line"><div><div class="brand">THE LOOM</div><div class="subbrand">A clearer view of everything in motion</div></div><div class="date" id="date"></div></div><nav class="nav" aria-label="Dashboard domains" id="nav"></nav></header>
@@ -90,8 +90,8 @@ let entries=[
 {domain:'Personal',project:'Marfa trip',action:'Purchase bandanas and tattoos',status:'Open',priority:'Low',due:'Nov 6',notes:'Trip preparation.'},
 {domain:'Personal',project:'Marfa trip',action:'Review weekend itinerary',status:'Active',priority:'Medium',due:'Nov 7',notes:'Review logistics and packing.'}
 ];
-const resourceMap={Overview:['CCFA project tracker','R2DX recruiting tracker','Family calendar','Personal tracker'],CCFA:['Humanaut tracker','Designer & architect outreach tracker','Art production references','Art Has a Job — Practice Thesis'],R2DX:['R2DX recruiting tracker','Oliver’s public profile','College target list'],Family:['Family calendar','School resources'],Personal:['Personal tracker','IFS guide and worksheets','Marfa itinerary']};
-const loomResourceUrls={'Art Has a Job — Practice Thesis':'https://docs.google.com/document/d/1z34iliRcQfqQBPpne_-X4gy3x7YYYkhcu3zifoLu9js/edit','IFS guide and worksheets':'https://chriscranesbluescreenofdeath.github.io/ifs/','Designer & architect outreach tracker':'https://docs.google.com/spreadsheets/d/1d7b115EtSw0Rh5C1FpwnSA1qa8ipTJlzhuvd8ov4Kp8/edit','Personal tracker':'https://docs.google.com/spreadsheets/d/1ZL80iKDwNCRDo3SRdPeYg1JKbSlyfhpwUKjKWO51D1c/edit','Marfa itinerary':'https://docs.google.com/document/d/1TrPuLWYV3MO1C2lU33GNBOI0Q1dX_O7LYB70_I9MYts/edit'};
+const resourceMap={Overview:['CCFA project tracker','R2DX recruiting tracker','Family calendar','Personal tracker'],CCFA:['Humanaut tracker','Designer & architect outreach tracker','Art production references','Art Has a Job — Practice Thesis'],R2DX:['R2DX recruiting tracker','Oliver’s public profile','College target list'],Family:['Family action tracker','Family calendar','School resources'],Personal:['Personal tracker','IFS guide and worksheets','Marfa itinerary']};
+const loomResourceUrls={'Art Has a Job — Practice Thesis':'https://docs.google.com/document/d/1z34iliRcQfqQBPpne_-X4gy3x7YYYkhcu3zifoLu9js/edit','IFS guide and worksheets':'https://chriscranesbluescreenofdeath.github.io/ifs/','Designer & architect outreach tracker':'https://docs.google.com/spreadsheets/d/1d7b115EtSw0Rh5C1FpwnSA1qa8ipTJlzhuvd8ov4Kp8/edit','Family action tracker':'https://docs.google.com/spreadsheets/d/1GI3t9C279FvJVw5Izg0vDdAR-GwZknGqCCDeLOHLP1E/edit','Personal tracker':'https://docs.google.com/spreadsheets/d/1ZL80iKDwNCRDo3SRdPeYg1JKbSlyfhpwUKjKWO51D1c/edit','Marfa itinerary':'https://docs.google.com/document/d/1TrPuLWYV3MO1C2lU33GNBOI0Q1dX_O7LYB70_I9MYts/edit'};
 
 const marfaResourceHtml = `
 <details class="trip-resource">
@@ -250,6 +250,40 @@ async function loadPrivateNotes(task,panel){
  if(privateR2dxNotes.connected())await load();else addButton();
 }
 
+
+let familyPrivateItems=[];
+async function connectFamilyTracker(){
+ const status=document.querySelector('#familyConnectionStatus');
+ if(status)status.textContent='Connecting to the private Family tracker…';
+ try{
+   const token=await privateR2dxNotes.authorize();
+   const sheet='1GI3t9C279FvJVw5Izg0vDdAR-GwZknGqCCDeLOHLP1E';
+   const range=encodeURIComponent("'Action Items'!A1:P300");
+   const response=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+sheet+'/values/'+range,{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+   if(!response.ok)throw Error('Could not read the Family tracker; check Google account access.');
+   const payload=await response.json();
+   const [headers,...rows]=payload.values||[];
+   if(!headers?.includes('Task ID'))throw Error('Unexpected Family tracker format.');
+   const idx=name=>headers.indexOf(name);
+   const field=(row,name)=>String(row[idx(name)]||'').trim();
+   familyPrivateItems=rows.filter(row=>/^FAM-\d+$/i.test(field(row,'Task ID'))).map(row=>{
+     const stage=field(row,'Status'),done=/^(done|complete|cancelled)$/i.test(stage);
+     const action=field(row,'Action')||field(row,'Next action');
+     return {domain:'Family',project:field(row,'Project')||'Family & Home',action,
+       id:field(row,'Task ID'),stage,status:done?'Complete':'Action Required',
+       projectState:done?'Complete':'Active',actionStatus:done?'In Progress':'Action Required',
+       owner:field(row,'Owner'),priority:field(row,'Priority')||'—',due:field(row,'Due date')||'—',
+       notes:[field(row,'Next action'),field(row,'Notes')].filter(Boolean).join(' · '),
+       parentId:field(row,'Parent ID'),itemType:field(row,'Item Type')||'Parent',
+       source:'https://docs.google.com/spreadsheets/d/'+sheet+'/edit',...todayFields(field(row,'Today'),field(row,'Today Order'))};
+   });
+   entries=entries.filter(x=>x.domain!=='Family').concat(familyPrivateItems);
+   render();
+   const ok=document.querySelector('#familyConnectionStatus');
+   if(ok)ok.textContent='Family tracker connected · '+familyPrivateItems.filter(x=>!x.parentId).length+' main action(s).';
+ }catch(error){if(status)status.textContent=error.message}
+}
+
 const collapsedActionGroups=new Set();
 function syncActionGroup(button){
  const collapsed=collapsedActionGroups.has(button.dataset.actionGroup);
@@ -285,7 +319,7 @@ const matchStatus=x=>{
  if(status==='Active · In Progress')return !required(x);
  return false;
 };
-let data=visibleDomain().filter(x=>(project==='All'||x.project===project||x.id==='PROGRAM')&&matchStatus(x)&&(!q||x.id==='PROGRAM'||[x.project,x.action,x.notes,x.priority,x.status,x.stage].join(' ').toLowerCase().includes(q)));
+let data=visibleDomain().filter(x=>!x.parentId&&x.itemType!=='Subtask'&&(project==='All'||x.project===project||x.id==='PROGRAM')&&matchStatus(x)&&(!q||x.id==='PROGRAM'||[x.project,x.action,x.notes,x.priority,x.status,x.stage].join(' ').toLowerCase().includes(q)));
 const isToday=x=>x.today&&!['deferred','on hold','cancelled','canceled'].includes(String(x.stage||'').toLowerCase());
 let todayCount=0;
 if(groupRequired){
@@ -299,7 +333,7 @@ const metrics=groupRequired
 $('#kpis').innerHTML=metrics.map(([label,count])=>`<div class="kpi"><div class="kpi-val">${count}</div><div class="kpi-label">${label}</div></div>`).join('');
 $('#count').textContent=data.length+' records';$('#empty').classList.toggle('hidden',data.length>0);
 const groupHeading=(key,label)=>`<tr class="action-group"><th colspan="6"><button type="button" class="action-group-toggle" data-action-group="${key}" aria-expanded="${!collapsedActionGroups.has(key)}">${label}</button></th></tr>`;
-const renderedRows=data.map((x,i)=>`<tr><td><div class="project-cell" data-domain="${escape(x.domain)}"><span class="project" title="${escape(x.project)}">${escape(x.project)}</span>${current==='Overview'?`<div class="light domain-label">${escape(x.domain)}</div>`:''}</div></td><td class="action"><span class="action-preview" title="${escape(actionPreview(x.action))}">${escape(actionPreview(x.action))}</span></td><td><span class="pill ${x.status.replace(/\s+/g,'')}">${escape(x.status)}</span></td><td class="light">${escape(x.priority)}</td><td class="light" style="white-space:nowrap">${escape(x.due)}</td><td><button class="row-open" data-i="${i}" aria-controls="detail-${i}" aria-expanded="false">Details</button></td></tr><tr class="details-row"><td colspan="6" style="padding:0;border:0"><div class="extra" id="detail-${i}"><p><strong>Next action:</strong> ${escape(x.action)}</p>${x.notes?`<div class="action-notes">${formatActionNotes(x.notes)}</div>`:''}${x.domain==='R2DX'?privateNotesPanel(x):''}${x.taskSource?taskSourceLink(x.taskSource):""}${x.stage?`<div style="margin-top:7px"><strong>Tracker stage:</strong> ${escape(x.stage)}</div>`:''}${x.source?`<a href="${escape(x.source)}" target="_blank" rel="noopener" style="color:#384b57;display:inline-block;margin-top:8px">Open source tracker ↗</a>`:''}</div></td></tr>`);
+const renderedRows=data.map((x,i)=>{const children=entries.filter(c=>c.parentId===x.id);return `<tr><td><div class="project-cell" data-domain="${escape(x.domain)}"><span class="project" title="${escape(x.project)}">${escape(x.project)}</span>${current==='Overview'?`<div class="light domain-label">${escape(x.domain)}</div>`:''}</div></td><td class="action"><span class="action-preview" title="${escape(actionPreview(x.action))}">${escape(actionPreview(x.action))}</span></td><td><span class="pill ${x.status.replace(/\s+/g,'')}">${escape(x.status)}</span></td><td class="light">${escape(x.priority)}</td><td class="light" style="white-space:nowrap">${escape(x.due)}</td><td><button class="row-open" data-i="${i}" aria-controls="detail-${i}" aria-expanded="false">Details</button></td></tr><tr class="details-row"><td colspan="6" style="padding:0;border:0"><div class="extra" id="detail-${i}"><p><strong>Next action:</strong> ${escape(x.action)}</p>${x.notes?`<div class="action-notes">${formatActionNotes(x.notes)}</div>`:''}${children.length?`<div class="loom-subtasks"><strong>Sub-actions (${children.length})</strong><ul>${children.map(c=>`<li><span class="pill">${escape(c.stage||c.status)}</span> <strong>${escape(c.action)}</strong>${c.notes?`<div class="light">${formatActionNotes(c.notes)}</div>`:''}</li>`).join('')}</ul></div>`:''}${x.domain==='R2DX'?privateNotesPanel(x):''}${x.taskSource?taskSourceLink(x.taskSource):""}${x.stage?`<div style="margin-top:7px"><strong>Tracker stage:</strong> ${escape(x.stage)}</div>`:''}${x.source?`<a href="${escape(x.source)}" target="_blank" rel="noopener" style="color:#384b57;display:inline-block;margin-top:8px">Open source tracker ↗</a>`:''}</div></td></tr>`;});
 $('#rows').innerHTML=groupRequired&&data.length
  ? groupHeading('today','Action required today')+(todayCount?renderedRows.slice(0,todayCount).join(''):'<tr><td colspan="6" class="light">No actions marked Today.</td></tr>')
    +(todayCount<data.length?groupHeading('other','Other action required')+renderedRows.slice(todayCount).join(''):'')
@@ -316,7 +350,11 @@ $('#rows').querySelectorAll('.action-group-toggle').forEach(button=>{
 $('#rows').querySelectorAll('.row-open').forEach(b=>b.addEventListener('click',()=>{const d=$('#detail-'+b.dataset.i);d.classList.toggle('show');b.setAttribute('aria-expanded',d.classList.contains('show'));b.textContent=d.classList.contains('show')?'Close':'Details';if(d.classList.contains('show')&&data[b.dataset.i].domain==='R2DX')loadPrivateNotes(data[b.dataset.i],d)}));
 $('#rows').querySelectorAll('tr:not(.details-row):not(.action-group)').forEach(row=>row.addEventListener('click',event=>{if(event.target.closest('button,a'))return;row.querySelector('.row-open')?.click()}));
 $('#resources').innerHTML=(resourceMap[current]||[]).map(n=>n==='Marfa itinerary'?`<div class="simple-line">${marfaResourceHtml}</div>`:`<div class="simple-line"><div><strong>${n==='Humanaut tracker'?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="https://docs.google.com/spreadsheets/d/1V3aD7mDJf9qfIcbV_1CChzdb-XqLq7lsOhHx8kqOtFQ/edit" target="_blank" rel="noopener">Humanaut tracker ↗</a>':loomResourceUrls[n]?'<a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="'+escape(loomResourceUrls[n])+'" target="_blank" rel="noopener">'+escape(n)+' ↗</a>':escape(n)}</strong><small>${n==='Humanaut tracker'?'Live tracker source':n==='IFS guide and worksheets'?'Practical IFS introduction · resources and worksheet downloads':'Reference · integration pending'}</small></div></div>`).join('');
-$('#briefsSection').classList.toggle('hidden',current!=='CCFA');
+if(current==='Family'){
+ $('#resources').insertAdjacentHTML('beforeend','<div class="simple-line"><div><strong>Private Family actions</strong><small id="familyConnectionStatus">Connect Google to view live family actions without publishing family records.</small><button type="button" id="connectFamily" class="row-open">Connect Family tracker</button></div></div>');
+ $('#connectFamily').addEventListener('click',connectFamilyTracker);
+ }
+ $('#briefsSection').classList.toggle('hidden',current!=='CCFA');
 $('#briefs').innerHTML=current==='CCFA'?briefLinks.map(([title,url])=>`<div class="simple-line"><div><strong><a style="color:inherit;text-decoration:underline;text-underline-offset:3px" href="${escape(url)}" target="_blank" rel="noopener">${escape(title)} ↗</a></strong></div></div>`).join(''):'';
 
 }
@@ -480,7 +518,7 @@ function toCcfaActions(csv,src){
   const projectState=st==='complete'?'Complete':(['not started','planning','pipeline','cancelled'].includes(st)?'Pipeline':'Active');
   const actionStatus=next?'Action Required':'In Progress';
   const status=projectState==='Active'?actionStatus:projectState;
-  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'CCFA',project:get(r,'Project / Initiative')||'CCFA Sales & Marketing',action:next||deliverable||'No next step recorded',status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Next Action Due')||get(r,'Target Date')||'—',notes:[deliverable,get(r,'Dependencies / Context'),get(r,'Cadence')?'Cadence: '+get(r,'Cadence'):null].filter(Boolean).join(' · '),taskSource:readTaskSource(r,get),source:src.source};
+  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'CCFA',project:get(r,'Project / Initiative')||'CCFA Sales & Marketing',action:deliverable||next||'No next step recorded',parentId:get(r,'Parent ID'),itemType:get(r,'Item Type')||'Parent',status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Next Action Due')||get(r,'Target Date')||'—',notes:[deliverable,get(r,'Dependencies / Context'),get(r,'Cadence')?'Cadence: '+get(r,'Cadence'):null].filter(Boolean).join(' · '),taskSource:readTaskSource(r,get),source:src.source};
  });
 }
 
@@ -494,7 +532,7 @@ function toR2dxActions(csv,src){
   const actionStatus=s==='in progress'?'In Progress':'Action Required';
   const status=projectState==='Active'?actionStatus:projectState;
   const action=get(r,'Action')||get(r,'Next Step')||'No next action recorded';
-  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:'R2DX',project:get(r,'Project')||'Recruiting',action,status,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due Date')||'—',notes:get(r,'Notes')||get(r,'Details')||get(r,'Instructions')||'',source:src.source};
+  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:'R2DX',project:get(r,'Project')||'Recruiting',action,status,projectState,actionStatus,stage,parentId:get(r,'Parent ID'),itemType:get(r,'Item Type')||'Parent',id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due Date')||'—',notes:get(r,'Notes')||get(r,'Details')||get(r,'Instructions')||'',source:src.source};
  });
 }
 
@@ -506,7 +544,7 @@ function toPersonalActions(csv,src){
   const stage=get(r,'Status')||get(r,'Status / Notes'),st=stage.toLowerCase();
   const projectState=['done','complete','completed','cancelled'].includes(st)?'Complete':'Active';
   const next=get(r,'Next action')||get(r,'Next Steps / Notes'),actionStatus=next?'Action Required':'In Progress';
-  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'Personal',project:get(r,'Project')||'Personal',action:next||get(r,'Action')||'No next step recorded',status:projectState==='Complete'?'Complete':actionStatus,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due date')||get(r,'Next review')||'—',notes:[get(r,'Action'),get(r,'Notes')].filter(Boolean).join(' · '),taskSource:readTaskSource(r,get),source:src.source};
+  return {...todayFields(get(r,'Today'),get(r,'Today Order')),domain:src.domain||'Personal',project:get(r,'Project')||'Personal',action:get(r,'Action')||next||'No next step recorded',parentId:get(r,'Parent ID'),itemType:get(r,'Item Type')||'Parent',status:projectState==='Complete'?'Complete':actionStatus,projectState,actionStatus,stage,id:get(r,'Task ID'),priority:get(r,'Priority')||'—',due:get(r,'Due date')||get(r,'Next review')||'—',notes:[get(r,'Action'),get(r,'Notes')].filter(Boolean).join(' · '),taskSource:readTaskSource(r,get),source:src.source};
  });
 }
 
@@ -540,8 +578,9 @@ async function loadRegistry(){
   }catch(e){errors.push(src.project+': '+e.message)}
  }
  const connectedDomains=new Set(dynamic.map(x=>x.domain));
+ if(familyPrivateItems.length)connectedDomains.add('Family');
  connectedDomains.add('CCFA'); // Live Humanaut takes precedence over CCFA sample entries.
- entries=entries.filter(x=>!connectedDomains.has(x.domain)).concat(dynamic);
+ entries=entries.filter(x=>!connectedDomains.has(x.domain)).concat(dynamic,familyPrivateItems);
  // Remove CCFA illustrative records; the first registered project owns CCFA live view.
  if(successful.length){
   const time=new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'}).format(new Date());
