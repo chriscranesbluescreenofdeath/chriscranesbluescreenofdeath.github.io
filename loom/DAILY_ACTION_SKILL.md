@@ -20,3 +20,7 @@ Effective 2026-11-15. Canonical instructions live in [LOOM Master Registry](http
 - [Dashboard](https://chriscranesbluescreenofdeath.github.io/loom/)
 - [Source](https://github.com/chriscranesbluescreenofdeath/chriscranesbluescreenofdeath.github.io/blob/main/loom/index.html)
 - [Master Registry](https://docs.google.com/spreadsheets/d/13_gjX1xHgJsO4iL0fAZ3Jzp3vATS-u_Y-IMsLUagQEo/edit)
+
+## New action intake and child hierarchy
+
+For any add/edit/move/close of an action, read [WRITE_ACTION_SKILL.md](WRITE_ACTION_SKILL.md). Classify Parent vs Subtask explicitly; if the user has not identified which, ask before creating the new action. Use `Item Type` and `Parent ID` fields. A single parent should appear in the closed dashboard list; its child steps expand beneath it. Check outstanding replies against **inbox and sent** before preserving any 'waiting for reply' status.
