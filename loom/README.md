@@ -35,7 +35,7 @@ This file is the durable project pointer for future sessions. Read it before cha
 
 - Read [DAILY_ACTION_SKILL.md](DAILY_ACTION_SKILL.md) and Master Registry **Gateway** / **Status Rules** before changing LOOM daily reviews or the dashboard.
 - Each visible action is a single short outcome/next-step headline. Full narrative, evidence, subtasks and links live in the collapsed **Details** panel; mobile and desktop lists cannot wrap into multi-line paragraphs.
-- The weekday Morning Plan and Day Close automations contain the same binding one-line UX instruction. Change those prompts together when revising the contract.
+- All four weekday automations (8 AM, 11 AM, 2 PM, 5 PM) have short prompts invoking the versioned [Daily Review Runbook v2](DAILY_ACTION_SKILL.md) with an explicit mode. Keep detailed logic only in that runbook; update all four only when changing the runbook path/version, not for every new exception.
 
 ## Single-entry LOOM write protocol (November 15, 2026)
 
