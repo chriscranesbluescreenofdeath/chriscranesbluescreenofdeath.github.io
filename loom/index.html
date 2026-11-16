@@ -304,7 +304,7 @@ function loomActionComment(task, compact=false){
    <button type="button" data-quick="done">Done</button>
    <button type="button" class="loom-send" data-send="chatgpt">Continue in ChatGPT ↗</button>
   </div>
-  <small>Your task ID, title, status and source will accompany the comment. You will review and send it in ChatGPT; this site does not change the tracker.</small>
+  <small>Your task ID, title, status and source will accompany the comment. Review and send in ChatGPT. No tracker change happens here. Avoid entering sensitive information in this URL-based handoff.</small>
  </div>`;
 }
 function loomCommentContext(task, comment){
@@ -322,7 +322,7 @@ function loomCommentContext(task, comment){
  'My instruction: '+comment,
  '',
  'Use the LOOM Write Action procedure and verify any authorized tracker update. Do not assume the task is complete unless supported by this instruction or evidence.'
- ].filter(v=>v!==null).join('\\n');
+ ].filter(v=>v!==null).join('\n');
 }
 function openLoomComment(task,comment){
  const prompt=loomCommentContext(task,comment);
@@ -336,7 +336,7 @@ function wireLoomComments(container,taskMap){
   const task=taskMap.get(box.dataset.taskId);
   const textarea=box.querySelector('textarea');
   if(!task||!textarea)return;
-  box.querySelector('[data-quick="done"]').addEventListener('click',()=>{textarea.value='Mark this action complete.';textarea.focus()});
+  box.querySelector('[data-quick="done"]').addEventListener('click',()=>{openLoomComment(task,'Mark this action complete.');});
   box.querySelector('[data-send="chatgpt"]').addEventListener('click',()=>{
     const comment=textarea.value.trim();
     if(!comment){textarea.focus();return}
