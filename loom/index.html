@@ -336,7 +336,12 @@ function wireLoomComments(container,taskMap){
   const task=taskMap.get(box.dataset.taskId);
   const textarea=box.querySelector('textarea');
   if(!task||!textarea)return;
-  box.querySelector('[data-quick="done"]').addEventListener('click',()=>{openLoomComment(task,'Mark this action complete.');});
+  box.querySelector('[data-quick="done"]').addEventListener('click',()=>{
+    const comment=textarea.value.trim();
+    // Never discard a typed update. A typed comment is the primary instruction;
+    // Done is only an additional explicit status request when no text was entered.
+    openLoomComment(task,comment||'Mark this action complete.');
+  });
   box.querySelector('[data-send="chatgpt"]').addEventListener('click',()=>{
     const comment=textarea.value.trim();
     if(!comment){textarea.focus();return}
