@@ -533,7 +533,7 @@ function toHumanautActions(csv,src=BOOTSTRAP_HUMANAUT){
     const projectState=/on hold|deferred|hold until/i.test(stage)?'On Hold':id==='PROGRAM'?'Active':normalizeHumanautStage(stage,src)==='Pipeline'?'On Hold':normalizeHumanautStage(stage,src);
     const actionStatus=next?'Action Required':'In Progress';
     const status=projectState==='Complete'?'Complete':projectState==='On Hold'?'On Hold':actionStatus;
-    const notes=[next?null:'No next step recorded in column E.',stage?'Current milestone: '+stage:null,prod?'Expected production complete: '+prod:null,install?'Install scheduled: '+install:null].filter(Boolean).join(' ');
+    const notes=[cell(r,'Notes / Exceptions'),next?null:'No next step recorded in column E.',stage?'Current milestone: '+stage:null,prod?'Expected production complete: '+prod:null,install?'Install scheduled: '+install:null].filter(Boolean).join(' · ');
     return {...todayFields(cell(r,'Today'),cell(r,'Today Order')),domain:'CCFA',project:id==='PROGRAM'?'Humanaut · Program':`Humanaut · ${place}`,action:next||'No next step recorded',status,projectState,actionStatus,priority:'—',due:install?humanDate(install):prod?humanDate(prod):'—',notes,id,stage,source:sourceUrl||BOOTSTRAP_HUMANAUT.source};
 
   });
