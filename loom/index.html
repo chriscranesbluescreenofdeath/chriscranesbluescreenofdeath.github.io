@@ -83,7 +83,9 @@
 .loom-comment-controls .loom-send{background:#252925;color:#fff;border-color:#252925}
 .loom-comment small{display:block;margin-top:8px;color:#71756d;line-height:1.45}
 .loom-subtask-comment{margin:7px 0 12px 0}
-\n/* Three-state parent presentation: one line per action; expand for children and notes. */\n.data-table .action-preview,.data-table .project{white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis}.data-table .pill.OnHold{background:#eeecee;color:#55565a}.action-group th{border-top:1px solid #ddd}.action-group-toggle{font-weight:750!important}\n</style>
+\n/* Three-state parent presentation: one line per action; expand for children and notes. */
+.data-table .action-preview,.data-table .project{white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis}.data-table .pill.OnHold{background:#eeecee;color:#55565a}.action-group th{border-top:1px solid #ddd}.action-group-toggle{font-weight:750!important}
+</style>
 </head>
 <body>
 <header class="header wrap"><div class="header-line"><div><div class="brand">THE LOOM</div><div class="subbrand">A clearer view of everything in motion</div></div><div class="date" id="date"></div></div><nav class="nav" aria-label="Dashboard domains" id="nav"></nav></header>
@@ -91,7 +93,8 @@
 <script>
 'use strict';
 const domains=[['Overview','Today’s priorities and open actions across your trackers.'],['CCFA','Fine art commissions, relationships, production, and outreach.'],['R2DX','Oliver’s recruiting, academic milestones, and outreach.'],['Family','Family schedules and shared responsibilities.'],['Personal','The small and significant things outside work.']];
-let entries=[]; // No fictitious actions if live sources are unavailable.\nconst resourceMap={Overview:['CCFA project tracker','R2DX recruiting tracker','Family calendar','Personal tracker'],CCFA:['Humanaut tracker','Designer & architect outreach tracker','Art production references','Art Has a Job — Practice Thesis'],R2DX:['R2DX recruiting tracker','Oliver’s public profile','College target list','Oliver SAT preparation brief','Oliver PSAT score report'],Family:['Family action tracker','Family calendar','School resources'],Personal:['Personal tracker','IFS guide and worksheets','Marfa itinerary']};
+let entries=[]; // No fictitious actions if live sources are unavailable.
+const resourceMap={Overview:['CCFA project tracker','R2DX recruiting tracker','Family calendar','Personal tracker'],CCFA:['Humanaut tracker','Designer & architect outreach tracker','Art production references','Art Has a Job — Practice Thesis'],R2DX:['R2DX recruiting tracker','Oliver’s public profile','College target list','Oliver SAT preparation brief','Oliver PSAT score report'],Family:['Family action tracker','Family calendar','School resources'],Personal:['Personal tracker','IFS guide and worksheets','Marfa itinerary']};
 const loomResourceUrls={'Oliver SAT preparation brief':"https://docs.google.com/document/d/1_dgOAK3RmKtL8ABIyDWPvVdUqdwsN1ye/edit?usp=drivesdk&ouid=118387061878831624848&rtpof=true&sd=true",'Oliver PSAT score report':'https://drive.google.com/file/d/1jYh5rVH1pUyTDQQ5Aa4gQd-MMuT0f2Ww/view','Art Has a Job — Practice Thesis':'https://docs.google.com/document/d/1z34iliRcQfqQBPpne_-X4gy3x7YYYkhcu3zifoLu9js/edit','IFS guide and worksheets':'https://chriscranesbluescreenofdeath.github.io/ifs/','Designer & architect outreach tracker':'https://docs.google.com/spreadsheets/d/1d7b115EtSw0Rh5C1FpwnSA1qa8ipTJlzhuvd8ov4Kp8/edit','Family action tracker':'https://docs.google.com/spreadsheets/d/1GI3t9C279FvJVw5Izg0vDdAR-GwZknGqCCDeLOHLP1E/edit','Personal tracker':'https://docs.google.com/spreadsheets/d/1ZL80iKDwNCRDo3SRdPeYg1JKbSlyfhpwUKjKWO51D1c/edit','Marfa itinerary':'https://docs.google.com/document/d/1TrPuLWYV3MO1C2lU33GNBOI0Q1dX_O7LYB70_I9MYts/edit'};
 
 const marfaResourceHtml = `
