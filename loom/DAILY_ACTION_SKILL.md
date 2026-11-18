@@ -1,5 +1,5 @@
 # LOOM Daily Review Runbook
-Version: **2.0** · Effective 2026-11-15
+Version: **2.1** · Effective 2026-11-18
 Status: authoritative **procedure for LOOM daily reviews**, referenced by all four scheduled automations. This Markdown file is an operating specification, not executable code or a standalone installed plugin.
 
 ## Input
@@ -21,9 +21,9 @@ Status: authoritative **procedure for LOOM daily reviews**, referenced by all fo
 3. **CALENDAR:** Read relevant nonroutine events and conflicts for the review horizon. Match invitations/RSVPs against action records; don't request an RSVP already confirmed.
 4. **RECONCILE:** Match each material message/event to a task ID (or flag unmatched commitments). Compare timestamped evidence with current recorded status and next step. Do not turn "draft" into "sent", "quoted" into "approved", or user-reported payment into provider-verified payment. Where authorization permits, update **only** affected authoritative rows and read them back. Otherwise present a clearly identified proposed correction.
 5. **HIERARCHY:** Root list = `Item Type=Parent` (missing type only for legacy rows). `Subtask` requires Parent ID and appears only inside expanded parent Details, never as a second root item. Include pending child deadlines inside parent detail and compact parent signal. `Reference` is non-action. If a new requested action is not classified and the relationship is unclear, ask Parent vs Subtask before writing; use [Write Action procedure](WRITE_ACTION_SKILL.md).
-6. **PRIORITIZE:** Keep all open parent outcomes in trackers. Construct the short Today sequence by explicit Today/order, due date, verified new blockers, and user priorities. Deferred/On Hold actions remain parked until their recorded activation conditions. No duplicates and no fabricated dates.
-7. **REPORT:** Each parent has **one concise, verb-led visible headline** (ideally <=100 characters), owner/date/status/link where available. Never paste emails or multi-paragraph notes into the collapsed list. Expand only for requested detail, conflict, and decision. State unverified evidence or inaccessible source plainly.
-8. **VERIFY/LOG:** Check that edited rows persist, the root/child count is right, no stale "awaiting reply" language survives a verified reply, and no sensitive data is published. For `close` mode, append/update ONE dated row in Master Registry Session Log, not a new diary/project.
+6. **STATE / BUCKET:** Every parent has one display state: **Active**, **On Hold**, or **Done**. Map `To do`, `In progress`, `Waiting`, `Blocked` to Active (with original subtype in Details); map `Deferred`, `On Hold`, `Paused` and site pipeline without current user work to On Hold; map `Done`, `Complete`, `Cancelled` to Done. An On Hold parent retains its next review/reactivation date and remains visible in its own section below Active, never counted as today's priority before reactivation. Subactions inherit the parent listing, remain collapsed, and can carry their own status and dates. Reconcile overdue hold dates at every morning/close run; never silently reactivate without evidence or authorization.\n7. **PRIORITIZE:** Keep all open parent outcomes in trackers. Construct the short Today sequence by explicit Today/order, due date, verified new blockers, and user priorities. Deferred/On Hold actions remain parked until their recorded activation conditions. No duplicates and no fabricated dates.
+8. **REPORT:** Show all current parents in order **Active → On Hold** (Done only when requested), with a clear heading/count for each bucket. Each parent has **one concise, verb-led visible headline** (ideally <=100 characters), owner/date/status/link where available. Never paste emails or multi-paragraph notes into the collapsed list. Expand only for requested detail, conflict, and decision. State unverified evidence or inaccessible source plainly.
+9. **VERIFY/LOG:** Check that edited rows persist, the root/child count is right, no stale "awaiting reply" language survives a verified reply, and no sensitive data is published. For `close` mode, append/update ONE dated row in Master Registry Session Log, not a new diary/project.
 
 ## Mode output
 | Mode | Deliverable |
@@ -37,7 +37,7 @@ Status: authoritative **procedure for LOOM daily reviews**, referenced by all fo
 - [ ] All required sources either read or explicitly flagged unavailable.
 - [ ] Both inbox AND sent searched; targeted reply search performed for every waiting task.
 - [ ] No stale "waiting for Nathan" if the November 12 email is present (regression example, not a permanent active task).
-- [ ] Each root row is one line; LASA basketball has one parent, child steps underneath.
+- [ ] Active section precedes On Hold section; Done is hidden by default. Each root row is one line; LASA basketball has one parent, child steps underneath.
 - [ ] Unchanged work not repeated in 11 AM / 2 PM summaries.
 - [ ] No new writes/sends/bookings outside user authorization.
 - [ ] Closeout logs one row and verifies persistence, or reports failure.
