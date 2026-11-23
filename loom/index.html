@@ -370,7 +370,7 @@ const byDomain=(a,b)=>(domainRank[a.domain]??9)-(domainRank[b.domain]??9);
 $('#kpis').classList.toggle('grouped',groupRequired);
 const stateOf=x=>x.projectState||'Active';
 const matchStatus=x=>status==='All'||(status==='Open'&&['Active','On Hold'].includes(stateOf(x)))||status===stateOf(x);
-let data=visibleDomain().filter(x=>x.id!=='PROGRAM'&&!x.parentId&&x.itemType!=='Subtask'&&(project==='All'||x.project===project||x.id==='PROGRAM')&&matchStatus(x)&&(!q||[x.project,x.action,x.notes,x.priority,x.status,x.stage].join(' ').toLowerCase().includes(q)));
+let data=visibleDomain().filter(x=>x.id!=='PROGRAM'&&x.projectState!=='Reference'&&!x.parentId&&x.itemType!=='Subtask'&&(project==='All'||x.project===project||x.id==='PROGRAM')&&matchStatus(x)&&!(status==='Open'&&x.projectState==='On Hold'&&/^2027\b/.test(String(x.due||'')))&&(!q||[x.project,x.action,x.notes,x.priority,x.status,x.stage].join(' ').toLowerCase().includes(q)));
 const active=data.filter(x=>stateOf(x)==='Active').sort((a,b)=>byDomain(a,b)||(b.today?1:0)-(a.today?1:0)||(a.todayOrder||Infinity)-(b.todayOrder||Infinity));
 const parked=data.filter(x=>stateOf(x)==='On Hold').sort((a,b)=>byDomain(a,b)||String(a.due||'').localeCompare(String(b.due||'')));
 const done=data.filter(x=>stateOf(x)==='Complete');
@@ -535,7 +535,8 @@ function toHumanautActions(csv,src=BOOTSTRAP_HUMANAUT){
     const id=cell(r,'Project ID').trim(),place=cell(r,'Project / Address').trim(),stage=cell(r,'Status / Notes').trim();
     const next=cell(r,src.actionColumn||'Next Steps / Notes').trim();
     const prod=cell(r,'Expected Production Complete').trim(),install=cell(r,'Install Scheduled').trim();
-    const projectState=/on hold|deferred|hold until/i.test(stage)?'On Hold':id==='PROGRAM'?'Active':normalizeHumanautStage(stage,src)==='Pipeline'?'On Hold':normalizeHumanautStage(stage,src);
+    const uncommittedPipeline=/^site identified$/i.test(stage)&&!/(deferred until|on hold|follow up|follow-up|reactivat)/i.test(next);
+    const projectState=uncommittedPipeline?'Reference':/on hold|deferred|hold until/i.test(stage)?'On Hold':id==='PROGRAM'?'Active':normalizeHumanautStage(stage,src)==='Pipeline'?'On Hold':normalizeHumanautStage(stage,src);
     const actionStatus=next?'Action Required':'In Progress';
     const status=projectState==='Complete'?'Complete':projectState==='On Hold'?'On Hold':actionStatus;
     const notes=[cell(r,'Notes / Exceptions'),next?null:'No next step recorded in column E.',stage?'Current milestone: '+stage:null,prod?'Expected production complete: '+prod:null,install?'Install scheduled: '+install:null].filter(Boolean).join(' · ');
